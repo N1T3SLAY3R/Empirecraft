@@ -1,0 +1,390 @@
+name: Empirecraft
+main: com.n1t3slay3r.empirecraft.main.Main
+version: 0.9.7
+description: Next gen minecraft diplomacy system
+author: N1T3SLAY3R
+depend: [Vault]
+prefix: Empirecraft
+softdepend: [WorldGuard]
+website: http://dev.bukkit.org/bukkit-plugins/empirecraft/
+commands:
+    ec:
+        description: Displays all possible commands
+        usage: /empirecraft
+        permission: empirecraft.ec
+        permission-message: You do not have permission to use this command
+        aliases: empirecraft
+    vil:
+        description: Displays all possible village commands
+        usage: /village
+        permission: empirecraft.village
+        permission-message: You do not have permission to use this command
+        aliases: village
+    emp:
+        description: Displays all possible empire commands
+        usage: /empire
+        permission: empirecraft.empire
+        permission-message: You do not have permission to use this command
+        aliases: empire
+permissions:
+    empirecraft.*:
+        default: op
+        description: Gives access to all empirecraft commands
+        children:
+            empirecraft.admin.*: true
+            empirecraft.user.*: true
+    empirecraft.user.*:
+        default: not-op
+        description: Gives access to all empirecraft commands
+        children:
+            empirecraft.owner.*: true
+            empirecraft.manage.*: true
+            empirecraft.member.*: true
+            empirecraft.main.*: true
+            empirecraft.empire.*: true
+    empirecraft.admin.*:
+        description: Gives access to all empirecraft commands
+        children:
+            empirecraft.admin.createstructure: true
+            empirecraft.admin.deletestructure: true
+            empirecraft.admin.structuretypes: true
+    empirecraft.owner.*:
+        description: Gives access to all empirecraft owner commands
+        children:
+            empirecraft.village.owner.retire: true
+            empirecraft.village.owner.promote: true
+            empirecraft.village.owner.demote: true
+            empirecraft.village.owner.abandon: true
+            empirecraft.village.owner.settax: true
+            empirecraft.village.owner.description: true
+            empirecraft.village.owner.togglesetting.*: true
+            empirecraft.village.owner.diplomacy.*: true
+            empirecraft.village.owner.settinglist: true
+    empirecraft.village.owner.diplomacy.*:
+        description: Gives access to all empirecraft owner commands
+        children:
+            empirecraft.village.owner.diplomacy.war: true
+            empirecraft.village.owner.diplomacy.truce: true
+            empirecraft.village.owner.diplomacy.alliance: true
+            empirecraft.village.owner.diplomacy.neutralize: true
+            empirecraft.village.owner.diplomacy.acceptrequest: true
+            empirecraft.village.owner.diplomacy.denyrequest: true
+            empirecraft.village.owner.diplomacy.requestlist: true
+    empirecraft.manage.*:
+        description: Gives access to all empirecraft manager commands
+        children:
+            empirecraft.village.manage.invite: true
+            empirecraft.village.manage.kick: true
+            empirecraft.village.manage.applications: true
+            empirecraft.village.manage.accept: true
+            empirecraft.village.manage.deny: true
+            empirecraft.village.manage.withdraw: true
+            empirecraft.village.manage.claim: true
+            empirecraft.village.manage.unclaim: true
+            empirecraft.village.manage.build: true
+            empirecraft.village.manage.buildlist: true
+            empirecraft.village.manage.takedown: true
+            empirecraft.village.manage.forsale: true
+            empirecraft.village.manage.notforsale: true
+            empirecraft.village.manage.revokeplot: true
+            empirecraft.village.manage.sethome: true
+            empirecraft.village.manage.viewdebt: true
+    empirecraft.member.*:
+        description: Gives access to all empirecraft member commands
+        children:
+            empirecraft.village: true
+            empirecraft.village.member.info: true
+            empirecraft.village.member.deposit: true
+            empirecraft.village.member.leave: true
+            empirecraft.village.member.home: true
+            empirecraft.village.member.setperm: true
+            empirecraft.village.member.permlist: true
+            empirecraft.village.member.tax: true
+            empirecraft.village.member.buyplot: true
+            empirecraft.village.member.memberlist: true
+            empirecraft.village.member.managerlist: true
+            empirecraft.village.member.relations: true
+    empirecraft.main.*:
+        description: Gives access to all main empirecraft commands
+        children:
+            empirecraft.ec: true
+            empirecraft.createvillage: true
+            empirecraft.createempire: true
+            empirecraft.join: true
+            empirecraft.map: true
+            empirecraft.info: true
+            empirecraft.help: true
+            empirecraft.version: true
+            empirecraft.villagelist: true
+            empirecraft.invitations: true
+            empirecraft.chatchannel.*: true
+            empirecraft.chatchanneltypes: true
+    empirecraft.empire.*:
+        description: Gives access to all empire commands
+        children:
+            empirecraft.empire: true
+            empirecraft.empire.follower.*: true
+            empirecraft.empire.leader.*: true
+    empirecraft.empire.follower.*:
+        description: Gives access to all follower commands
+        children:
+            empirecraft.empire.follower.deposit: true
+            empirecraft.empire.follower.tp: true
+            empirecraft.empire.follower.tplist: true
+            empirecraft.empire.follower.leave: true
+            empirecraft.empire.follower.info: true
+            empirecraft.empire.follower.relations: true
+            empirecraft.empire.follower.vessels: true
+            empirecraft.empire.follower.tax: true
+    empirecraft.empire.leader.*:
+        description: Gives access to all leader commands
+        children:
+            empirecraft.empire.leader.invitevillage: true
+            empirecraft.empire.leader.removevillage: true
+            empirecraft.empire.leader.applications: true
+            empirecraft.empire.leader.accept: true
+            empirecraft.empire.leader.deny: true
+            empirecraft.empire.leader.abandon: true
+            empirecraft.empire.leader.viewdebt: true
+            empirecraft.empire.leader.diplomacy.*: true
+            empirecraft.empire.leader.retire: true
+            empirecraft.empire.leader.settax: true
+            empirecraft.empire.leader.description: true
+            empirecraft.empire.leader.withdraw: true
+            empirecraft.empire.leader.settp: true
+            empirecraft.empire.leader.removetp: true
+            empirecraft.empire.leader.upgraderank: true
+            empirecraft.empire.leader.ranklist: true
+            empirecraft.empire.leader.rankinfo: true
+    empirecraft.empire.leader.diplomacy.*:
+        description: Gives access to all diplomacy commands for empires
+        children:
+            empirecraft.empire.leader.diplomacy.war: true
+            empirecraft.empire.leader.diplomacy.truce: true
+            empirecraft.empire.leader.diplomacy.alliance: true
+            empirecraft.empire.leader.diplomacy.neutralize: true
+            empirecraft.empire.leader.diplomacy.acceptrequest: true
+            empirecraft.empire.leader.diplomacy.denyrequest: true
+            empirecraft.empire.leader.diplomacy.requestlist: true
+    empirecraft.togglesetting.*:
+        description: Gives access to all main empirecraft commands
+        children:
+            empirecraft.togglesetting.fire: true
+            empirecraft.togglesetting.pvp: true
+            empirecraft.togglesetting.mobs: true
+            empirecraft.togglesetting.explostions: true
+    empirecraft.chatchannel.*:
+        description: Changes your chat channel to the selected
+        children:
+            empirecraft.chatchannel.local: true
+            empirecraft.chatchannel.world: true
+            empirecraft.chatchannel.global: true
+            empirecraft.chatchannel.village: true
+            empirecraft.chatchannel.villagemanagers: true
+            empirecraft.chatchannel.villageallies: true
+            empirecraft.chatchannel.empire: true
+            empirecraft.chatchannel.empireallies: true
+    empirecraft.admin.createstructure:
+        description: Creates a structure format (height from your foot block to the <height>) with the size of the chunk your currently standing in
+    empirecraft.admin.deletestructure:
+        description: Deletes the structure file and save data based on its <name>
+    empirecraft.admin.structuretypes:
+        description: Displays a list of the possible structure types that you can create
+    empirecraft.createvillage:
+        description: Allows you to create a village
+    empirecraft.createempire:
+        description: Allows you to create an empire
+    empirecraft.ec:
+        description: Allows you to use the base ec command chain
+    empirecraft.village:
+        description: Allows you to use the base village chain
+    empirecraft.join:
+        description: Allows you to apply to join other villages
+    empirecraft.map:
+        description: Displays a map of surrounding territory
+    empirecraft.info:
+        description: Displays info about the chunck you are currently standing in
+    empirecraft.help:
+        description: Displays info about this plugin
+    empirecraft.version:
+        description: Displays the plugins version
+    empirecraft.invitations:
+        description: Displays a list of village invites requesting you to join them
+    empirecraft.villagelist:
+        description: Displays a list of all the villages in the server
+    empirecraft.chatchannel.local:
+        description: Limits your range of chat to a configured distance of chunks
+    empirecraft.chatchannel.world:
+        description: Limits your chat to the world your in and vice versa
+    empirecraft.chatchannel.global:
+        description: Default, everyone can see your messages and vice versa
+    empirecraft.chatchannel.village:
+        description: Limits your chat to your village
+    empirecraft.chatchannel.villagemanagers:
+        description: Limits your chat to the village owner and managers
+    empirecraft.chatchannel.villageallies:
+        description: Limits your chat to  allied villages
+    empirecraft.chatchannel.empire:
+        description: Limits your chat to your empire villages and their members etc.
+    empirecraft.chatchannel.empireallies:
+        description: Limits your chat to  allied empires and your own empire
+    empirecraft.chatchanneltypes:
+        description: Displays a list of the possible chat channels that you can enter
+    empirecraft.village.owner.retire:
+        description: Retires you as the leader and puts someone else in charge
+    empirecraft.village.owner.promote:
+        description: Promotes a member to an assistant who can use the manage commands
+    empirecraft.village.owner.demote:
+        description: Demotes an assistant back to a member
+    empirecraft.village.owner.abandon:
+        description: Destroys all buildings except for plots over a minute and removes the village completely
+    empirecraft.village.owner.settax:
+        description: Sets the daily (24hr) tax price, players who cannot pay will go into debt and you will see what their debt is
+    empirecraft.village.owner.description:
+        description: Sets the description for all to see
+    empirecraft.village.owner.togglesetting.fire:
+        description: You can toggle fire
+    empirecraft.village.owner.togglesetting.pvp:
+        description: You can toggle pvp
+    empirecraft.village.owner.togglesetting.explosions:
+        description: You can toggle explosions
+    empirecraft.village.owner.togglesetting.mobs:
+        description: You can toggle mobs
+    empirecraft.village.owner.settinglist:
+        description: View which settings are currently enabled and disabled
+    empirecraft.village.owner.diplomacy.war:
+        description: Declare war on the enemy village
+    empirecraft.village.owner.diplomacy.truce:
+        description: Send a request for the current war to end
+    empirecraft.village.owner.diplomacy.alliance:
+        description: Send a request for an alliance
+    empirecraft.village.owner.diplomacy.neutralize:
+        description: Remove your alliance and make each other neurtral
+    empirecraft.village.owner.diplomacy.acceptrequest:
+        description: Creates an alliance/truce with the target village
+    empirecraft.village.owner.diplomacy.denyrequest:
+        description: Denys the allaince/truce request of the target village
+    empirecraft.village.owner.diplomacy.requestlist:
+        description: Views a list of all alliance/truce requests
+    empirecraft.village.manage.invite:
+        description: Invites an online player to join your village
+    empirecraft.village.manage.kick:
+        description: Kicks a player from your village
+    empirecraft.village.manage.applications:
+        description: Displays a list of players wanting to join the village
+    empirecraft.village.manage.accept:
+        description: Accepts a players request to join the village
+    empirecraft.village.manage.deny:
+        description: Removes a players pending application to join the village
+    empirecraft.village.manage.withdraw:
+        description: Takes a sum of money from the village's vault
+    empirecraft.village.manage.claim:
+        description: Claims land for the village
+    empirecraft.village.manage.unclaim:
+        description: Unclaims land from the village
+    empirecraft.village.manage.build:
+        description: Builds a structure over a certain period of time
+    empirecraft.village.manage.buildlist:
+        description: Lists all the types of structures you can build
+    empirecraft.village.manage.takedown:
+        description: Destroy the structure in the chunk you are standing in
+    empirecraft.village.manage.forsale:
+        description: Sets the chunk your standing in forsale so that members of your village can buy it
+    empirecraft.village.manage.notforsale:
+        description: Sets the chunk your standing in to be unbuyable
+    empirecraft.village.manage.revokeplot:
+        description: Sets the plot to be neutrally owned
+    empirecraft.village.manage.sethome:
+        description: Sets home teleport location within the rank structure's chunk
+    empirecraft.village.manage.viewdebt:
+        description: Names every manager and member of the villages tax payments, whether they missed some and are negative or donated and have gone positive
+    empirecraft.village.member.info:
+        description: Displays info about your village
+    empirecraft.village.member.leave:
+        description: Leaves your current village
+    empirecraft.village.member.deposit:
+        description: Contribute money to your village (does not affect tax daily cost, but will lower debt)
+    empirecraft.village.member.home:
+        description: Teleports you to the village home block
+    empirecraft.village.member.setperm:
+        description: Defines your own plots for permissions of others to do stuff on them
+    empirecraft.village.member.permlist:
+        description: Lists all the possible permissions that you can set
+    empirecraft.village.member.tax:
+        description: Tells you the time till the next tax and what it is
+    empirecraft.village.member.buyplot:
+        description: Purchases the plot that you are currently standing in
+    empirecraft.village.member.memberlist:
+        description: Displays a list of all the members in the village
+    empirecraft.village.member.managerlist:
+        description: Displays a list of all the managers in the village
+    empirecraft.village.member.relations:
+        description: View all your current alliances and enemys
+    empirecraft.empire:
+        description: Allows you to use the base empire command chain
+    empirecraft.empire.follower:
+        description: Allows you to use the base follower command chain
+    empirecraft.empire.follower.deposit:
+        description: Deposits the selected amount of cash from your pocket into the empires vault
+    empirecraft.empire.follower.tp:
+        description: Teleports to the specificied tp location
+    empirecraft.empire.follower.tplist:
+        description: Lists the names of all the possible teleporations
+    empirecraft.empire.follower.leave:
+        description: Your village leaves the empire and becomes independent (only the owner of your village can do this)
+    empirecraft.empire.follower.info:
+        description: Displays information about your empire
+    empirecraft.empire.follower.relations:
+        description: Displays your empires allies and enmies (villages involved within them are included)
+    empirecraft.empire.follower.vessels:
+        description: Displays all the villages within your empire
+    empirecraft.empire.follower.tax:
+        description: Tells you the time till the next village tax and what it is
+    empirecraft.empire.leader:
+        description: Allows you to use the base leader command chain
+    empirecraft.empire.leader.retire:
+        description: Changes the leader of the empire to the owner of the selected village, and their village becomes the central village
+    empirecraft.empire.leader.settax:
+        description: Sets the daily tax that all villages have to pay from their vault to yours
+    empirecraft.empire.leader.description:
+        description: Sets the empires description for all to see
+    empirecraft.empire.leader.withdraw:
+        description: Withdraws cash from the empire's vault
+    empirecraft.empire.leader.settp:
+        description: Sets a teleportation point (must be positioned inside an empires claimed territory)
+    empirecraft.empire.leader.removetp:
+        description: Removes the selected teleportation point
+    empirecraft.empire.leader.invitevillage:
+        description: Invites the selected village to join your empire
+    empirecraft.empire.leader.removevillage:
+        description: Removes the selected village from your empire
+    empirecraft.empire.leader.applications:
+        description: Views a list of villages who have requested to join your empire
+    empirecraft.empire.leader.accept:
+        description: Accepts a village's request to join the empire
+    empirecraft.empire.leader.deny:
+        description: Denys a village's request to join the empire
+    empirecraft.empire.leader.abandon:
+        description: Removes the empire, and all villages become *free*
+    empirecraft.empire.leader.viewdebt:
+        description: Names every village's tax payments, whether they missed some and are negative or donated and have gone positive
+    empirecraft.empire.leader.upgraderank:
+        description: Changes the empires rank to the specified rank, potentially increasing revenue/decreasing upkeep, increasing the maximum number of villages, or increasing the maximum number of teleportation points
+    empirecraft.empire.leader.ranklist:
+        description: Lists the names of all possible ranks and what they are upgraded from
+    empirecraft.empire.leader.rankinfo:
+        description: Gives a finite description about the specified rank
+    empirecraft.empire.leader.diplomacy.war:
+        description: Declare war on the target empire
+    empirecraft.empire.leader.diplomacy.truce:
+        description: Send a request for the current war to end
+    empirecraft.empire.leader.diplomacy.alliance:
+        description: Send a request for an alliance
+    empirecraft.empire.leader.diplomacy.neutralize:
+        description: Remove your alliance and make each other neurtral
+    empirecraft.empire.leader.diplomacy.acceptrequest:
+        description: Creates an alliance/truce with the target empire
+    empirecraft.empire.leader.diplomacy.denyrequest:
+        description: Denys the allaince/truce request of the target empire
+    empirecraft.empire.leader.diplomacy.requestlist:
+        description: Views a list of all alliance/truce requests
