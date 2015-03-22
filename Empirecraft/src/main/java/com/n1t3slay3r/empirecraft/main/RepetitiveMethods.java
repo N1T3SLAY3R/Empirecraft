@@ -12,6 +12,7 @@ import static com.n1t3slay3r.empirecraft.main.Main.econ;
 import static com.n1t3slay3r.empirecraft.main.Main.serverdata;
 import static com.n1t3slay3r.empirecraft.main.Main.structureFolder;
 import static com.n1t3slay3r.empirecraft.main.Main.tempHashMap;
+import static com.n1t3slay3r.empirecraft.main.Main.temparraylist;
 import static com.n1t3slay3r.empirecraft.main.Main.tempfile;
 import java.io.File;
 import java.io.IOException;
@@ -20,22 +21,24 @@ import static java.lang.Math.pow;
 import static java.lang.Math.random;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import static org.bukkit.Material.AIR;
+import static org.bukkit.Material.TORCH;
+import static org.bukkit.Material.REDSTONE_TORCH_ON;
+import static org.bukkit.Material.REDSTONE_TORCH_OFF;
 import static org.bukkit.Material.BEDROCK;
 import static org.bukkit.Material.LADDER;
 import static org.bukkit.Material.LOG;
-import static org.bukkit.Material.REDSTONE_TORCH_OFF;
-import static org.bukkit.Material.REDSTONE_TORCH_ON;
 import static org.bukkit.Material.SANDSTONE;
 import static org.bukkit.Material.STEP;
-import static org.bukkit.Material.TORCH;
 import static org.bukkit.Material.WOOD;
 import static org.bukkit.Material.WOOD_STEP;
 import static org.bukkit.Material.WOOL;
@@ -46,6 +49,8 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -63,52 +68,17 @@ public class RepetitiveMethods {
     private static Block block;
 
     public static void test(Plugin plugin) {
-        //Blocks that might not have the right direction (ex. stairs)
-        ArrayList<String> blocks = new ArrayList<>();
-        blocks.add("ACACIA_STAIRS");
-        blocks.add("BIRCH_WOOD_STAIRS");
-        blocks.add("BRICK_STAIRS");
-        blocks.add("COBBLESTONE_STAIRS");
-        blocks.add("JUNGLE_WOOD_STAIRS");
-        blocks.add("NETHER_BRICK_STAIRS");
-        blocks.add("QUARTZ_STAIRS");
-        blocks.add("SANDSTONE_STAIRS");
-        blocks.add("SANDSTONE");
-        blocks.add("SMOOTH_STAIRS");
-        blocks.add("SPRUCE_WOOD_STAIRS");
-        blocks.add("WOOD_STAIRS");
-        blocks.add("CHEST");
-        blocks.add("ACTIVATOR_RAIL");
-        blocks.add("POWERED_RAIL");
-        blocks.add("DROPPER");
-        blocks.add("DISPENSER");
-        blocks.add("WOOD");
-        blocks.add("WOOL");
-        blocks.add("LOG");
-        blocks.add("DETECTOR_RAIL");
-        blocks.add("PISTON_BASE");
-        blocks.add("PISTON_STICKY_BASE");
-        blocks.add("STEP");
-        blocks.add("WOOD_STEP");
-        blocks.add("TORCH");
-        blocks.add("REDSTONE_TORCH_OFF");
-        blocks.add("REDSTONE_TORCH_ON");
-        blocks.add("LADDER");
-        blocks.add("FURNACE");
-        blocks.add("BURNING_FURNACE");
-        blocks.add("RAILS");
-        blocks.add("PUMPKIN");
-        blocks.add("JACK_O_LANTERN");
-        blocks.add("FENCE_GATE");
-        blocks.add("BED");
-        blocks.add("BED_BLOCK");
         ArrayList<Player> tempplist = new ArrayList<>();
-        Long build = Config.getLong("Village Settings.Build Delay"), destr = Config.getLong("Village Settings.Destruction Delay"), income = Config.getLong("Village Settings.Structure Income Delay"), tax = Config.getLong("Village Settings.Tax Delay"), tax2 = Config.getLong("Empire Settings.Tax Delay"), save = Config.getLong("Global Settings.Auto Save Interval");
+        TreeMap<Integer, TreeMap<Integer, ArrayList<Integer>>> tMap = new TreeMap<>();
+        HashMap<String, HashMap<String, TreeMap<String, TreeMap<String, ArrayList<String>>>>> t2Map = new HashMap<>();
+        Long build = Config.getLong("Village Settings.Build Delay"), destr = Config.getLong("Village Settings.Destruction Delay"), tax = Config.getLong("Village Settings.Tax Delay"), tax2 = Config.getLong("Empire Settings.Tax Delay"), save = Config.getLong("Global Settings.Auto Save Interval");
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             time = System.currentTimeMillis() / 1000;
             for (String w : serverdata.get("worldmap").keySet()) {
                 for (Object x : serverdata.get("worldmap").get(w).keySet()) {
                     for (Object z : ((HashMap) serverdata.get("worldmap").get(w).get(x)).keySet()) {
+                        //Fireworks delay so it doesnt get spammed
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).remove("fir");
                         //DESTRUCTION/CLEARING OF LAND SYSTEM
                         if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).containsKey("cle")) {
                             if (destr != 0) {
@@ -120,8 +90,9 @@ public class RepetitiveMethods {
                                     } catch (IOException | InvalidConfigurationException ex) {
                                         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                                     }
-                                    Integer nx = (Integer) x * 16 - 1, ny = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getConfigurationSection("Scematic").getKeys(false).size() - 2, nz = (Integer) z * 16;
-                                    Boolean fin = false;
+                                    Integer ny = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Height") - 2, nx = (Integer) x * 16 - 2, nz = (Integer) z * 16 - 1;
+                                    String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
+                                    Boolean fin = false, cont = false;
                                     Block chest;
                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
                                         chest = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.X") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + tempyaml.getInt("Main Chest.Z") - 1);
@@ -132,34 +103,140 @@ public class RepetitiveMethods {
                                     } else {
                                         chest = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.Z") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + Math.abs(tempyaml.getInt("Main Chest.X") - 16));
                                     }
-                                    Material mat = AIR;
-                                    do {
-                                        nx++;
-                                        if (nx - 16 == (Integer) x * 16) {
-                                            nx -= 16;
-                                            nz++;
-                                            if (nz - 16 == (Integer) z * 16) {
-                                                nz -= 16;
-                                                ny--;
+                                    nx += ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) % 16;
+                                    nz += (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) / 16) % 16;
+                                    if (!MainConversions.isMultiType(structure)) {
+                                        ny -= ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) / 256;
+                                        do {
+                                            nx++;
+                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("cle", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) + 1);
+                                            if (nx - 16 == (Integer) x * 16) {
+                                                nx -= 16;
+                                                nz++;
+                                                if (nz - 16 == (Integer) z * 16) {
+                                                    nz -= 16;
+                                                    ny--;
+                                                }
+                                            }
+                                            if (ny < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 1) {
+                                                fin = true;
+                                            } else {
+                                                String dir = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString();
+                                                String part;
+                                                Material mat;
+                                                if (dir.equalsIgnoreCase("n")) {
+                                                    part = "Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nx - (Integer) x * 16 + 1) + "." + (nz - (Integer) z * 16 + 1);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else if (dir.equalsIgnoreCase("e")) {
+                                                    part = "Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nz - (Integer) z * 16 + 1) + "." + Math.abs(nx - 16 - (Integer) x * 16);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else if (dir.equalsIgnoreCase("s")) {
+                                                    part = "Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (16 - (nx - (Integer) x * 16)) + "." + (16 - (nz - (Integer) z * 16));
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else {
+                                                    part = "Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + Math.abs(nz - 16 - (Integer) z * 16) + "." + (nx - (Integer) x * 16 + 1);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                }
+                                            }
+                                        } while ((Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType() == AIR || !cont) && !fin);
+                                    } else {
+                                        Integer cx = 0, cz = 0, t1 = 0;
+                                        Check:
+                                        for (String a : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                                            for (String b : tempyaml.getConfigurationSection("Scematic." + a).getKeys(false)) {
+                                                if ((256 * tempyaml.getInt("Height")) + t1 < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle"))) {
+                                                    t1 += tempyaml.getInt("Height") * 256;
+                                                } else {
+                                                    cx = Integer.parseInt(a);
+                                                    cz = Integer.parseInt(b);
+                                                    fin = true;
+                                                    break Check;
+                                                }
                                             }
                                         }
-                                        if (ny < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 1) {
-                                            fin = true;
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
-                                            mat = Material.getMaterial(tempyaml.getString("Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nx - (Integer) x * 16 + 1) + "." + (nz - (Integer) z * 16 + 1) + ".id"));
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                            mat = Material.getMaterial(tempyaml.getString("Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nz - (Integer) z * 16 + 1) + "." + Math.abs(nx - 16 - (Integer) x * 16) + ".id"));
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                            mat = Material.getMaterial(tempyaml.getString("Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (16 - (nx - (Integer) x * 16)) + "." + (16 - (nz - (Integer) z * 16)) + ".id"));
-                                        } else {
-                                            mat = Material.getMaterial(tempyaml.getString("Scematic." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + Math.abs(nz - 16 - (Integer) z * 16) + "." + (nx - (Integer) x * 16 + 1) + ".id"));
-                                        }
-                                    } while (((Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(mat) && !blocks.contains(mat.toString())) || Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType() == AIR || Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).equals(chest)) && !fin);
+                                        fin = !fin;
+                                        ny -= (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) / 256) % tempyaml.getInt("Height");
+                                        String dir = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString();
+                                        String part;
+                                        Material mat;
+                                        nx -= cx * 16;
+                                        nz -= cz * 16;
+                                        Loop:
+                                        do {
+                                            nx++;
+                                            if (nx - 16 == ((Integer) x - cx) * 16) {
+                                                nx -= 16;
+                                                nz++;
+                                                if (nz - 16 == ((Integer) z - cz) * 16) {
+                                                    nz -= 16;
+                                                    ny--;
+                                                }
+                                            }
+                                            if (ny < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 1) {
+                                                break;
+                                            } else {
+                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("cle", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) + 1);
+                                                if (dir.equalsIgnoreCase("n")) {
+                                                    part = "Scematic." + cx + "." + cz + "." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nx - ((Integer) x - cx) * 16 + 1) + "." + (nz - ((Integer) z - cz) * 16 + 1);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else if (dir.equalsIgnoreCase("e")) {
+                                                    part = "Scematic." + cz + "." + cx + "." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (nz - ((Integer) z + cz) * 16 + 1) + "." + Math.abs(nx - 16 - ((Integer) x + cx) * 16);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else if (dir.equalsIgnoreCase("s")) {
+                                                    part = "Scematic." + (cx * -1) + "." + (cz * -1) + "." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + (16 - (nx - ((Integer) x + cx) * 16)) + "." + (16 - (nz - ((Integer) z + cz) * 16));
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                } else {
+                                                    part = "Scematic." + (cz * -1) + "." + (cx * -1) + "." + (ny - ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + 2) + "." + Math.abs(nz - 16 - ((Integer) z + cz) * 16) + "." + (nx - ((Integer) x + cx) * 16 + 1);
+                                                    if (tempyaml.contains(part)) {
+                                                        mat = Material.getMaterial(tempyaml.getString(part + ".id"));
+                                                        cont = BuildRotationCheck.cont(Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz), mat, chest, tempyaml, part, dir);
+                                                    } else if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
+                                                        cont = true;
+                                                    }
+                                                }
+                                            }
+                                        } while ((Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType() == AIR || !cont) && !fin);
+                                    }
                                     if (fin) {
                                         ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).remove("cle");
                                         if (Config.getInt("Village Settings.Build Delay") == 0) {
                                             int cy = 0;
-                                            for (int y = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")); y < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getConfigurationSection("Scematic").getKeys(false).size() - 2; y++) {
+                                            for (int y = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")); y < ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Height") - 2; y++) {
                                                 cy++;
                                                 for (nx = 1; nx < 17; nx++) {
                                                     for (nz = 1; nz < 17; nz++) {
@@ -167,8 +244,7 @@ public class RepetitiveMethods {
                                                             if (Config.getInt("Village Settings.Build Delay") == 0 && !(tempyaml.getInt("Main Chest.X") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && tempyaml.getInt("Main Chest.Z") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(Material.getMaterial(tempyaml.getString("Scematic." + cy + "." + nx + "." + nz + ".id")));
-                                                                mat = block.getType();
-                                                                BuildRotationCheck.Set("n", block, mat, cy, nx, nz, tempyaml);
+                                                                BuildRotationCheck.Set("n", block, block.getType(), cy, nx, nz, tempyaml);
                                                             } else if (!(tempyaml.getInt("Main Chest.X") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && tempyaml.getInt("Main Chest.Z") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(AIR);
@@ -177,8 +253,7 @@ public class RepetitiveMethods {
                                                             if (Config.getInt("Village Settings.Build Delay") == 0 && !(tempyaml.getInt("Main Chest.Z") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && Math.abs(tempyaml.getInt("Main Chest.X") - 17) == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(Material.getMaterial(tempyaml.getString("Scematic." + cy + "." + nz + "." + Math.abs(nx - 17) + ".id")));
-                                                                mat = block.getType();
-                                                                BuildRotationCheck.Set("e", block, mat, cy, nx, nz, tempyaml);
+                                                                BuildRotationCheck.Set("e", block, block.getType(), cy, nx, nz, tempyaml);
                                                             } else if (!(tempyaml.getInt("Main Chest.Z") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && Math.abs(tempyaml.getInt("Main Chest.X") - 17) == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(AIR);
@@ -187,8 +262,7 @@ public class RepetitiveMethods {
                                                             if (Config.getInt("Village Settings.Build Delay") == 0 && !(17 - tempyaml.getInt("Main Chest.X") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && 17 - tempyaml.getInt("Main Chest.Z") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(Material.getMaterial(tempyaml.getString("Scematic." + cy + "." + (17 - nx) + "." + (17 - nz) + ".id")));
-                                                                mat = block.getType();
-                                                                BuildRotationCheck.Set("s", block, mat, cy, nx, nz, tempyaml);
+                                                                BuildRotationCheck.Set("s", block, block.getType(), cy, nx, nz, tempyaml);
                                                             } else if (!(17 - tempyaml.getInt("Main Chest.X") == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && 17 - tempyaml.getInt("Main Chest.Z") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(AIR);
@@ -197,8 +271,7 @@ public class RepetitiveMethods {
                                                             if (Config.getInt("Village Settings.Build Delay") == 0 && !(Math.abs(tempyaml.getInt("Main Chest.Z") - 17) == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && tempyaml.getInt("Main Chest.X") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(Material.getMaterial(tempyaml.getString("Scematic." + cy + "." + Math.abs(nz - 17) + "." + nx + ".id")));
-                                                                mat = block.getType();
-                                                                BuildRotationCheck.Set("w", block, mat, cy, nx, nz, tempyaml);
+                                                                BuildRotationCheck.Set("w", block, block.getType(), cy, nx, nz, tempyaml);
                                                             } else if (!(Math.abs(tempyaml.getInt("Main Chest.Z") - 17) == nx && tempyaml.getInt("Main Chest.Y") == y - 1 && tempyaml.getInt("Main Chest.X") == nz)) {
                                                                 block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx + (Integer) x * 16, y - 1, nz + (Integer) z * 16);
                                                                 block.setType(AIR);
@@ -207,7 +280,10 @@ public class RepetitiveMethods {
                                                     }
                                                 }
                                             }
-                                            String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
+                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).remove("con");
+                                            if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).get("own").toString()))).isOnline()) {
+                                                Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).get("own").toString())).sendMessage(ChatColor.DARK_PURPLE + "The structure " + ChatColor.LIGHT_PURPLE + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ChatColor.DARK_PURPLE + " has finished construction and is now operational");
+                                            }
                                             ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).remove("con");
                                             if (Config.isConfigurationSection("Village Ranks." + structure)) {
                                                 serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).replace("vir", structure);
@@ -215,13 +291,17 @@ public class RepetitiveMethods {
                                             } else {
                                                 if (!Config.getString("Village Structures." + structure + ".Type").equals("Archer")) {
                                                     tempHashMap.get("incometimer").put(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"), Config.get("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Income Timer"));
+                                                } else {
+                                                    temparraylist.clear();
+                                                    temparraylist.addAll(Config.getConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Productions").getKeys(false));
+                                                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("pro", temparraylist.get(0));
                                                 }
                                                 ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"));
                                             }
                                         }
                                     } else if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType() != BEDROCK) {
                                         Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).breakNaturally();
-                                    } else {
+                                    } else if (cont) {
                                         Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).setType(AIR);
                                     }
                                 }
@@ -237,9 +317,10 @@ public class RepetitiveMethods {
                                     } catch (IOException | InvalidConfigurationException ex) {
                                         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                                     }
-                                    Integer nx = 1, ny = 1, nz = 0;
+                                    Integer chx = 0, chz = 0, skip = 0, t1 = 0, nx = 0, ny = 0, nz = 0, icon = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")), xx = 0, zz = 0;
                                     Boolean fin = false, cont = false, not = false;
                                     Material mat = null;
+                                    String nmat = null;
                                     Block chest;
                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
                                         chest = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.X") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + tempyaml.getInt("Main Chest.Z") - 1);
@@ -250,291 +331,628 @@ public class RepetitiveMethods {
                                     } else {
                                         chest = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.Z") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + Math.abs(tempyaml.getInt("Main Chest.X") - 16));
                                     }
-                                    do {
-                                        nz++;
-                                        if (nz > 16) {
-                                            nz = 1;
-                                            nx++;
-                                            if (nx > 16) {
-                                                nx = 1;
-                                                ny++;
-                                            }
-                                        }
-                                        if (ny > tempyaml.getConfigurationSection("Scematic").getKeys(false).size()) {
-                                            fin = true;
-                                        } else if (!fin) {
-                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
-                                                mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + nx + "." + nz + ".id"));
-                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                                mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + nz + "." + Math.abs(nx - 17) + ".id"));
-                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                                mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + (17 - nx) + "." + (17 - nz) + ".id"));
-                                            } else {
-                                                mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + Math.abs(nz - 17) + "." + nx + ".id"));
-                                            }
-                                            if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).getType().equals(mat)) {
-                                                if (Config.getString("Village Settings.Require Materials To Build").equals("on")) {
-                                                    if (mat == WOOL || mat == SANDSTONE || mat == WOOD || mat == LOG || mat == STEP || mat == WOOD_STEP) {
-                                                        ItemStack stack = null;
-                                                        int xx = nx, zz = nz;
-                                                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                                            xx = nz;
-                                                            zz = Math.abs(nx - 17);
-                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                                            xx = (17 - nx);
-                                                            zz = (17 - nz);
-                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
-                                                            xx = Math.abs(nz - 17);
-                                                            zz = nx;
-                                                        }
-                                                        if (mat == WOOL) {
-                                                            switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
-                                                                case "BLACK":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.BLACK.getWoolData());
-                                                                    break;
-                                                                case "BLUE":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.BLUE.getWoolData());
-                                                                    break;
-                                                                case "BROWN":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.BROWN.getWoolData());
-                                                                    break;
-                                                                case "CYAN":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.CYAN.getWoolData());
-                                                                    break;
-                                                                case "GRAY":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.GRAY.getWoolData());
-                                                                    break;
-                                                                case "GREEN":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.GREEN.getWoolData());
-                                                                    break;
-                                                                case "LIGHT_BLUE":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.LIGHT_BLUE.getWoolData());
-                                                                    break;
-                                                                case "LIME":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.LIME.getWoolData());
-                                                                    break;
-                                                                case "MAGENTA":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.MAGENTA.getWoolData());
-                                                                    break;
-                                                                case "ORANGE":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.ORANGE.getWoolData());
-                                                                    break;
-                                                                case "PINK":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.PINK.getWoolData());
-                                                                    break;
-                                                                case "PURPLE":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.PURPLE.getWoolData());
-                                                                    break;
-                                                                case "RED":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.RED.getWoolData());
-                                                                    break;
-                                                                case "SILVER":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.SILVER.getWoolData());
-                                                                    break;
-                                                                case "WHITE":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.WHITE.getWoolData());
-                                                                    break;
-                                                                case "YELLOW":
-                                                                    stack = new ItemStack(mat, 1, DyeColor.YELLOW.getWoolData());
-                                                                    break;
-                                                            }
-                                                        } else if (mat == SANDSTONE) {
-                                                            switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
-                                                                case "CRACKED":
-                                                                    stack = new ItemStack(mat, 1, SandstoneType.CRACKED.getData());
-                                                                    break;
-                                                                case "GLYPHED":
-                                                                    stack = new ItemStack(mat, 1, SandstoneType.GLYPHED.getData());
-                                                                    break;
-                                                                case "SMOOTH":
-                                                                    stack = new ItemStack(mat, 1, SandstoneType.SMOOTH.getData());
-                                                                    break;
-                                                            }
-                                                        } else if (mat == STEP) {
-                                                            switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
-                                                                case "COBBLESTONE":
-                                                                    stack = new ItemStack(mat, 1, Material.COBBLESTONE.getMaxDurability());
-                                                                    break;
-                                                                case "STONE":
-                                                                    stack = new ItemStack(mat, 1, Material.STONE.getMaxDurability());
-                                                                    break;
-                                                                case "SANDSTONE":
-                                                                    stack = new ItemStack(mat, 1, Material.SANDSTONE.getMaxDurability());
-                                                                    break;
-                                                                case "BRICK":
-                                                                    stack = new ItemStack(mat, 1, Material.BRICK.getMaxDurability());
-                                                                    break;
-                                                                case "SMOOTH_BRICK":
-                                                                    stack = new ItemStack(mat, 1, Material.SMOOTH_BRICK.getMaxDurability());
-                                                                    break;
-                                                                case "QUARTZ":
-                                                                    stack = new ItemStack(mat, 1, Material.QUARTZ.getMaxDurability());
-                                                                    break;
-                                                                case "NETHER_BRICK":
-                                                                    stack = new ItemStack(mat, 1, Material.NETHER_BRICK.getMaxDurability());
-                                                                    break;
-                                                            }
-                                                        } else {
-                                                            switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
-                                                                case "ACACIA":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.ACACIA.getData());
-                                                                    break;
-                                                                case "BIRCH":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.BIRCH.getData());
-                                                                    break;
-                                                                case "DARK_OAK":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.DARK_OAK.getData());
-                                                                    break;
-                                                                case "GENERIC":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.GENERIC.getData());
-                                                                    break;
-                                                                case "JUNGLE":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.JUNGLE.getData());
-                                                                    break;
-                                                                case "REDWOOD":
-                                                                    stack = new ItemStack(mat, 1, TreeSpecies.REDWOOD.getData());
-                                                                    break;
-                                                            }
-                                                        }
-                                                        if (((InventoryHolder) chest.getState()).getInventory().containsAtLeast(stack, 1)) {
-                                                            ((InventoryHolder) chest.getState()).getInventory().removeItem(stack);
-                                                            cont = true;
-                                                        } else {
-                                                            not = true;
-                                                        }
-                                                    } else {
-                                                        Boolean cancel = false;
-                                                        if (mat == TORCH || mat == REDSTONE_TORCH_OFF || mat == REDSTONE_TORCH_ON || mat == LADDER) {
-                                                            int xx = nx, zz = nz, dir = 0, cx = -1, cz = -1;
-                                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                                                dir = 1;
-                                                                xx = nz;
-                                                                zz = Math.abs(nx - 17);
-                                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                                                dir = 2;
-                                                                xx = (17 - nx);
-                                                                zz = (17 - nz);
-                                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
-                                                                dir = 3;
-                                                                xx = Math.abs(nz - 17);
-                                                                zz = nx;
-                                                            }
-                                                            switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".dat")) {
-                                                                case "NORTH":
-                                                                    if (dir == 0) {
-                                                                        cz = 0;
-                                                                    } else if (dir == 1) {
-                                                                        cx = -2;
-                                                                    } else if (dir == 2) {
-                                                                        cz = -2;
-                                                                    } else {
-                                                                        cx = 0;
-                                                                    }
-                                                                    if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
-                                                                        cancel = true;
-                                                                    }
-                                                                    break;
-                                                                case "EAST":
-                                                                    if (dir == 0) {
-                                                                        cx = -2;
-                                                                    } else if (dir == 1) {
-                                                                        cz = -2;
-                                                                    } else if (dir == 2) {
-                                                                        cx = 0;
-                                                                    } else {
-                                                                        cz = 0;
-                                                                    }
-                                                                    if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
-                                                                        cancel = true;
-                                                                    }
-                                                                    break;
-                                                                case "SOUTH":
-                                                                    if (dir == 0) {
-                                                                        cz = -2;
-                                                                    } else if (dir == 1) {
-                                                                        cx = 0;
-                                                                    } else if (dir == 2) {
-                                                                        cz = 0;
-                                                                    } else {
-                                                                        cx = -2;
-                                                                    }
-                                                                    if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
-                                                                        cancel = true;
-                                                                    }
-                                                                    break;
-                                                                case "WEST":
-                                                                    if (dir == 0) {
-                                                                        cx = 0;
-                                                                    } else if (dir == 1) {
-                                                                        cz = 0;
-                                                                    } else if (dir == 2) {
-                                                                        cx = -2;
-                                                                    } else {
-                                                                        cz = -2;
-                                                                    }
-                                                                    if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
-                                                                        cancel = true;
-                                                                    }
-                                                                    break;
-                                                            }
-                                                        }
-                                                        if (!cancel) {
-                                                            if (((InventoryHolder) chest.getState()).getInventory().contains(mat)) {
-                                                                ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(mat, 1));
-                                                                cont = true;
-                                                            } else {
-                                                                for (String s : ((ArrayList<String>) tempHashMap.get("ble").get("a"))) {
-                                                                    String[] blo = s.split(":");
-                                                                    if (blo[0].equals(mat.toString()) || blo[1].equals(mat.toString())) {
-                                                                        if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[0]))) {
-                                                                            ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[0]), 1));
-                                                                            cont = true;
-                                                                        } else if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[1]))) {
-                                                                            ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[1]), 1));
-                                                                            cont = true;
-                                                                        }
-                                                                    }
-                                                                }
-                                                                if (!cont) {
-                                                                    not = true;
-                                                                }
-                                                            }
+                                    String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
+                                    tMap.clear();
+                                    Boolean rage = false;
+                                    if (!MainConversions.isMultiType(structure)) {
+                                        for (String sy : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                                            for (String sx : tempyaml.getConfigurationSection("Scematic." + sy).getKeys(false)) {
+                                                if (tempyaml.getConfigurationSection("Scematic." + sy + "." + sx).getKeys(false).size() + t1 < icon) {
+                                                    t1 += tempyaml.getConfigurationSection("Scematic." + sy + "." + sx).getKeys(false).size();
+                                                } else if (!rage) {
+                                                    rage = true;
+                                                    Integer i = 0;
+                                                    tMap.put(Integer.parseInt(sy), new TreeMap<>());
+                                                    tMap.get(Integer.parseInt(sy)).put(Integer.parseInt(sx), new ArrayList<>());
+                                                    for (String sz : tempyaml.getConfigurationSection("Scematic." + sy + "." + sx).getKeys(false)) {
+                                                        i++;
+                                                        if (t1 + i >= icon) {
+                                                            tMap.get(Integer.parseInt(sy)).get(Integer.parseInt(sx)).add(Integer.parseInt(sz));
                                                         }
                                                     }
                                                 } else {
-                                                    cont = true;
+                                                    tMap.putIfAbsent(Integer.parseInt(sy), new TreeMap<>());
+                                                    tMap.get(Integer.parseInt(sy)).put(Integer.parseInt(sx), new ArrayList<>());
+                                                    for (String sz : tempyaml.getConfigurationSection("Scematic." + sy + "." + sx).getKeys(false)) {
+                                                        tMap.get(Integer.parseInt(sy)).get(Integer.parseInt(sx)).add(Integer.parseInt(sz));
+                                                    }
                                                 }
                                             }
                                         }
-                                    } while (!cont && !fin);
-                                    if (fin && !not) {
+                                        Main:
+                                        for (Integer sy : tMap.keySet()) {
+                                            ny = sy;
+                                            for (Integer sx : tMap.get(sy).keySet()) {
+                                                for (Integer sz : tMap.get(sy).get(sx)) {
+                                                    nx = sx;
+                                                    nz = sz;
+                                                    xx = nx;
+                                                    zz = nz;
+                                                    skip++;
+                                                    mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + nx + "." + nz + ".id"));
+                                                    if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                        nx = Math.abs(zz - 17);
+                                                        nz = xx;
+                                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                        nx = (17 - xx);
+                                                        nz = (17 - zz);
+                                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
+                                                        nx = zz;
+                                                        nz = Math.abs(xx - 17);
+                                                    }
+                                                    if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).getType().equals(mat)) {
+                                                        if (Config.getString("Village Settings.Require Materials To Build").equals("on")) {
+                                                            boolean cancel = false;
+                                                            //Check to see if the required block is there/able to support the specificied block
+                                                            if (mat == TORCH || mat == REDSTONE_TORCH_OFF || mat == REDSTONE_TORCH_ON || mat == LADDER) {
+                                                                int dir = 0, cx = -1, cz = -1;
+                                                                if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                                    dir = 1;
+                                                                } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                                    dir = 2;
+                                                                } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
+                                                                    dir = 3;
+                                                                }
+                                                                switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".dat")) {
+                                                                    case "NORTH":
+                                                                        if (dir == 0) {
+                                                                            cz = 0;
+                                                                        } else if (dir == 1) {
+                                                                            cx = -2;
+                                                                        } else if (dir == 2) {
+                                                                            cz = -2;
+                                                                        } else {
+                                                                            cx = 0;
+                                                                        }
+                                                                        if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
+                                                                            cancel = true;
+                                                                        }
+                                                                        break;
+                                                                    case "EAST":
+                                                                        if (dir == 0) {
+                                                                            cx = -2;
+                                                                        } else if (dir == 1) {
+                                                                            cz = -2;
+                                                                        } else if (dir == 2) {
+                                                                            cx = 0;
+                                                                        } else {
+                                                                            cz = 0;
+                                                                        }
+                                                                        if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
+                                                                            cancel = true;
+                                                                        }
+                                                                        break;
+                                                                    case "SOUTH":
+                                                                        if (dir == 0) {
+                                                                            cz = -2;
+                                                                        } else if (dir == 1) {
+                                                                            cx = 0;
+                                                                        } else if (dir == 2) {
+                                                                            cz = 0;
+                                                                        } else {
+                                                                            cx = -2;
+                                                                        }
+                                                                        if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
+                                                                            cancel = true;
+                                                                        }
+                                                                        break;
+                                                                    case "WEST":
+                                                                        if (dir == 0) {
+                                                                            cx = 0;
+                                                                        } else if (dir == 1) {
+                                                                            cz = 0;
+                                                                        } else if (dir == 2) {
+                                                                            cx = -2;
+                                                                        } else {
+                                                                            cz = -2;
+                                                                        }
+                                                                        if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz + cz).getType().equals(AIR)) {
+                                                                            cancel = true;
+                                                                        }
+                                                                        break;
+                                                                }
+                                                            }
+                                                            if (mat == WOOL || mat == SANDSTONE || mat == WOOD || mat == LOG || mat == STEP || mat == WOOD_STEP) {
+                                                                ItemStack stack = null;
+                                                                nmat = tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ");
+                                                                if (mat == WOOL) {
+                                                                    switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                        case "BLACK":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.BLACK.getWoolData());
+                                                                            break;
+                                                                        case "BLUE":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.BLUE.getWoolData());
+                                                                            break;
+                                                                        case "BROWN":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.BROWN.getWoolData());
+                                                                            break;
+                                                                        case "CYAN":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.CYAN.getWoolData());
+                                                                            break;
+                                                                        case "GRAY":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.GRAY.getWoolData());
+                                                                            break;
+                                                                        case "GREEN":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.GREEN.getWoolData());
+                                                                            break;
+                                                                        case "LIGHT_BLUE":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.LIGHT_BLUE.getWoolData());
+                                                                            break;
+                                                                        case "LIME":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.LIME.getWoolData());
+                                                                            break;
+                                                                        case "MAGENTA":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.MAGENTA.getWoolData());
+                                                                            break;
+                                                                        case "ORANGE":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.ORANGE.getWoolData());
+                                                                            break;
+                                                                        case "PINK":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.PINK.getWoolData());
+                                                                            break;
+                                                                        case "PURPLE":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.PURPLE.getWoolData());
+                                                                            break;
+                                                                        case "RED":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.RED.getWoolData());
+                                                                            break;
+                                                                        case "SILVER":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.SILVER.getWoolData());
+                                                                            break;
+                                                                        case "WHITE":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.WHITE.getWoolData());
+                                                                            break;
+                                                                        case "YELLOW":
+                                                                            stack = new ItemStack(mat, 1, DyeColor.YELLOW.getWoolData());
+                                                                            break;
+                                                                    }
+                                                                } else if (mat == SANDSTONE) {
+                                                                    switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                        case "CRACKED":
+                                                                            stack = new ItemStack(mat, 1, SandstoneType.CRACKED.getData());
+                                                                            break;
+                                                                        case "GLYPHED":
+                                                                            stack = new ItemStack(mat, 1, SandstoneType.GLYPHED.getData());
+                                                                            break;
+                                                                        case "SMOOTH":
+                                                                            stack = new ItemStack(mat, 1, SandstoneType.SMOOTH.getData());
+                                                                            break;
+                                                                    }
+                                                                } else if (mat == STEP) {
+                                                                    switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                        case "COBBLESTONE":
+                                                                            stack = new ItemStack(mat, 1, Material.COBBLESTONE.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "STONE":
+                                                                            stack = new ItemStack(mat, 1, Material.STONE.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "SANDSTONE":
+                                                                            stack = new ItemStack(mat, 1, Material.SANDSTONE.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "BRICK":
+                                                                            stack = new ItemStack(mat, 1, Material.BRICK.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "SMOOTH_BRICK":
+                                                                            stack = new ItemStack(mat, 1, Material.SMOOTH_BRICK.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "QUARTZ":
+                                                                            stack = new ItemStack(mat, 1, Material.QUARTZ.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                        case "NETHER_BRICK":
+                                                                            stack = new ItemStack(mat, 1, Material.NETHER_BRICK.getNewData((byte) 0).getData());
+                                                                            break;
+                                                                    }
+                                                                } else {
+                                                                    switch (tempyaml.getString("Scematic." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                        case "ACACIA":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.ACACIA.getData());
+                                                                            break;
+                                                                        case "BIRCH":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.BIRCH.getData());
+                                                                            break;
+                                                                        case "DARK_OAK":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.DARK_OAK.getData());
+                                                                            break;
+                                                                        case "GENERIC":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.GENERIC.getData());
+                                                                            break;
+                                                                        case "JUNGLE":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.JUNGLE.getData());
+                                                                            break;
+                                                                        case "REDWOOD":
+                                                                            stack = new ItemStack(mat, 1, TreeSpecies.REDWOOD.getData());
+                                                                            break;
+                                                                    }
+                                                                }
+                                                                if (((InventoryHolder) chest.getState()).getInventory().containsAtLeast(stack, 1)) {
+                                                                    ((InventoryHolder) chest.getState()).getInventory().removeItem(stack);
+                                                                    cont = true;
+                                                                } else {
+                                                                    not = true;
+                                                                }
+                                                            } else if (!cancel) {
+                                                                nmat = mat.toString();
+                                                                if (((InventoryHolder) chest.getState()).getInventory().contains(mat)) {
+                                                                    ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(mat, 1));
+                                                                    cont = true;
+                                                                } else {
+                                                                    for (String s : ((ArrayList<String>) tempHashMap.get("ble").get("a"))) {
+                                                                        String[] blo = s.split(":");
+                                                                        if (blo[0].equals(mat.toString()) || blo[1].equals(mat.toString())) {
+                                                                            if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[0]))) {
+                                                                                ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[0]), 1));
+                                                                                cont = true;
+                                                                            } else if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[1]))) {
+                                                                                ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[1]), 1));
+                                                                                cont = true;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    if (!cont) {
+                                                                        not = true;
+                                                                    }
+                                                                }
+                                                            }
+                                                        } else {
+                                                            cont = true;
+                                                        }
+                                                    } else if (skip + icon == ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1) {
+                                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("con", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1);
+                                                    }
+                                                    if (cont) {
+                                                        break Main;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        Integer i;
+                                        t2Map.clear();
+                                        Loop:
+                                        for (String cx : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                                            for (String cz : tempyaml.getConfigurationSection("Scematic." + cx).getKeys(false)) {
+                                                for (String sy : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz).getKeys(false)) {
+                                                    for (String sx : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + sy).getKeys(false)) {
+                                                        if (tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + sy + "." + sx).getKeys(false).size() + t1 < icon) {
+                                                            t1 += tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + sy + "." + sx).getKeys(false).size();
+                                                        } else if (!rage) {
+                                                            rage = true;
+                                                            i = 0;
+                                                            t2Map.put(cx, new HashMap<>());
+                                                            t2Map.get(cx).put(cz, new TreeMap<>());
+                                                            t2Map.get(cx).get(cz).put(sy, new TreeMap<>());
+                                                            t2Map.get(cx).get(cz).get(sy).put(sx, new ArrayList<>());
+                                                            for (String sz : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + sy + "." + sx).getKeys(false)) {
+                                                                i++;
+                                                                if (t1 + i >= icon) {
+                                                                    t2Map.get(cx).get(cz).get(sy).get(sx).add(sz);
+                                                                }
+                                                            }
+                                                        } else {
+                                                            if (!t2Map.get(cx).get(cz).containsKey(sy)) {
+                                                                t2Map.get(cx).get(cz).put(sy, new TreeMap<>());
+                                                            }
+                                                            t2Map.get(cx).get(cz).get(sy).put(sx, new ArrayList<>());
+                                                            t2Map.get(cx).get(cz).get(sy).get(sx).addAll(tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + sy + "." + sx).getKeys(false));
+                                                        }
+                                                    }
+                                                }
+                                                if (rage) {
+                                                    chx = Integer.parseInt(cx);
+                                                    chz = Integer.parseInt(cz);
+                                                    break Loop;
+                                                }
+                                            }
+                                        }
+                                        if (!t2Map.isEmpty()) {
+                                            Main:
+                                            for (String sy : t2Map.get(chx.toString()).get(chz.toString()).keySet()) {
+                                                ny = Integer.parseInt(sy);
+                                                for (String sx : t2Map.get(chx.toString()).get(chz.toString()).get(sy).keySet()) {
+                                                    for (String sz : t2Map.get(chx.toString()).get(chz.toString()).get(sy).get(sx)) {
+                                                        nx = Integer.parseInt(sx);
+                                                        nz = Integer.parseInt(sz);
+                                                        xx = nx;
+                                                        zz = nz;
+                                                        skip++;
+                                                        mat = Material.getMaterial(tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + nx + "." + nz + ".id"));
+                                                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                            nx = Math.abs(zz - 17);
+                                                            nz = xx;
+                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                            nx = (17 - xx);
+                                                            nz = (17 - zz);
+                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
+                                                            nx = zz;
+                                                            nz = Math.abs(xx - 17);
+                                                        }
+                                                        if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1).getType().equals(mat)) {
+                                                            if (Config.getString("Village Settings.Require Materials To Build").equals("on")) {
+                                                                boolean cancel = false;
+                                                                if (mat == TORCH || mat == REDSTONE_TORCH_OFF || mat == REDSTONE_TORCH_ON || mat == LADDER) {
+                                                                    int dir = 0, cx = -1, cz = -1;
+                                                                    if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                                        dir = 1;
+                                                                        xx = nz;
+                                                                        zz = Math.abs(nx - 17);
+                                                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                                        dir = 2;
+                                                                        xx = (17 - nx);
+                                                                        zz = (17 - nz);
+                                                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
+                                                                        dir = 3;
+                                                                        xx = Math.abs(nz - 17);
+                                                                        zz = nx;
+                                                                    }
+                                                                    switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".dat")) {
+                                                                        case "NORTH":
+                                                                            if (dir == 0) {
+                                                                                cz = 0;
+                                                                            } else if (dir == 1) {
+                                                                                cx = -2;
+                                                                            } else if (dir == 2) {
+                                                                                cz = -2;
+                                                                            } else {
+                                                                                cx = 0;
+                                                                            }
+                                                                            if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz + cz).getType().equals(AIR)) {
+                                                                                cancel = true;
+                                                                            }
+                                                                            break;
+                                                                        case "EAST":
+                                                                            if (dir == 0) {
+                                                                                cx = -2;
+                                                                            } else if (dir == 1) {
+                                                                                cz = -2;
+                                                                            } else if (dir == 2) {
+                                                                                cx = 0;
+                                                                            } else {
+                                                                                cz = 0;
+                                                                            }
+                                                                            if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz + cz).getType().equals(AIR)) {
+                                                                                cancel = true;
+                                                                            }
+                                                                            break;
+                                                                        case "SOUTH":
+                                                                            if (dir == 0) {
+                                                                                cz = -2;
+                                                                            } else if (dir == 1) {
+                                                                                cx = 0;
+                                                                            } else if (dir == 2) {
+                                                                                cz = 0;
+                                                                            } else {
+                                                                                cx = -2;
+                                                                            }
+                                                                            if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz + cz).getType().equals(AIR)) {
+                                                                                cancel = true;
+                                                                            }
+                                                                            break;
+                                                                        case "WEST":
+                                                                            if (dir == 0) {
+                                                                                cx = 0;
+                                                                            } else if (dir == 1) {
+                                                                                cz = 0;
+                                                                            } else if (dir == 2) {
+                                                                                cx = -2;
+                                                                            } else {
+                                                                                cz = -2;
+                                                                            }
+                                                                            if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz + cz).getType().equals(AIR)) {
+                                                                                cancel = true;
+                                                                            }
+                                                                            break;
+                                                                    }
+                                                                }
+                                                                if (mat == WOOL || mat == SANDSTONE || mat == WOOD || mat == LOG || mat == STEP || mat == WOOD_STEP) {
+                                                                    ItemStack stack = null;
+                                                                    nmat = tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".typ");
+                                                                    if (mat == WOOL) {
+                                                                        switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                            case "BLACK":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.BLACK.getWoolData());
+                                                                                break;
+                                                                            case "BLUE":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.BLUE.getWoolData());
+                                                                                break;
+                                                                            case "BROWN":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.BROWN.getWoolData());
+                                                                                break;
+                                                                            case "CYAN":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.CYAN.getWoolData());
+                                                                                break;
+                                                                            case "GRAY":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.GRAY.getWoolData());
+                                                                                break;
+                                                                            case "GREEN":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.GREEN.getWoolData());
+                                                                                break;
+                                                                            case "LIGHT_BLUE":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.LIGHT_BLUE.getWoolData());
+                                                                                break;
+                                                                            case "LIME":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.LIME.getWoolData());
+                                                                                break;
+                                                                            case "MAGENTA":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.MAGENTA.getWoolData());
+                                                                                break;
+                                                                            case "ORANGE":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.ORANGE.getWoolData());
+                                                                                break;
+                                                                            case "PINK":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.PINK.getWoolData());
+                                                                                break;
+                                                                            case "PURPLE":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.PURPLE.getWoolData());
+                                                                                break;
+                                                                            case "RED":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.RED.getWoolData());
+                                                                                break;
+                                                                            case "SILVER":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.SILVER.getWoolData());
+                                                                                break;
+                                                                            case "WHITE":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.WHITE.getWoolData());
+                                                                                break;
+                                                                            case "YELLOW":
+                                                                                stack = new ItemStack(mat, 1, DyeColor.YELLOW.getWoolData());
+                                                                                break;
+                                                                        }
+                                                                    } else if (mat == SANDSTONE) {
+                                                                        switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                            case "CRACKED":
+                                                                                stack = new ItemStack(mat, 1, SandstoneType.CRACKED.getData());
+                                                                                break;
+                                                                            case "GLYPHED":
+                                                                                stack = new ItemStack(mat, 1, SandstoneType.GLYPHED.getData());
+                                                                                break;
+                                                                            case "SMOOTH":
+                                                                                stack = new ItemStack(mat, 1, SandstoneType.SMOOTH.getData());
+                                                                                break;
+                                                                        }
+                                                                    } else if (mat == STEP) {
+                                                                        switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                            case "COBBLESTONE":
+                                                                                stack = new ItemStack(mat, 1, Material.COBBLESTONE.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "STONE":
+                                                                                stack = new ItemStack(mat, 1, Material.STONE.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "SANDSTONE":
+                                                                                stack = new ItemStack(mat, 1, Material.SANDSTONE.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "BRICK":
+                                                                                stack = new ItemStack(mat, 1, Material.BRICK.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "SMOOTH_BRICK":
+                                                                                stack = new ItemStack(mat, 1, Material.SMOOTH_BRICK.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "QUARTZ":
+                                                                                stack = new ItemStack(mat, 1, Material.QUARTZ.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                            case "NETHER_BRICK":
+                                                                                stack = new ItemStack(mat, 1, Material.NETHER_BRICK.getNewData((byte) 0).getData());
+                                                                                break;
+                                                                        }
+                                                                    } else {
+                                                                        switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".typ")) {
+                                                                            case "ACACIA":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.ACACIA.getData());
+                                                                                break;
+                                                                            case "BIRCH":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.BIRCH.getData());
+                                                                                break;
+                                                                            case "DARK_OAK":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.DARK_OAK.getData());
+                                                                                break;
+                                                                            case "GENERIC":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.GENERIC.getData());
+                                                                                break;
+                                                                            case "JUNGLE":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.JUNGLE.getData());
+                                                                                break;
+                                                                            case "REDWOOD":
+                                                                                stack = new ItemStack(mat, 1, TreeSpecies.REDWOOD.getData());
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                    if (((InventoryHolder) chest.getState()).getInventory().containsAtLeast(stack, 1)) {
+                                                                        ((InventoryHolder) chest.getState()).getInventory().removeItem(stack);
+                                                                        cont = true;
+                                                                    } else {
+                                                                        not = true;
+                                                                    }
+                                                                } else if (!cancel) {
+                                                                    nmat = mat.toString();
+                                                                    if (((InventoryHolder) chest.getState()).getInventory().contains(mat)) {
+                                                                        ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(mat, 1));
+                                                                        cont = true;
+                                                                    } else {
+                                                                        for (String s : ((ArrayList<String>) tempHashMap.get("ble").get("a"))) {
+                                                                            String[] blo = s.split(":");
+                                                                            if (blo[0].equals(mat.toString()) || blo[1].equals(mat.toString())) {
+                                                                                if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[0]))) {
+                                                                                    ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[0]), 1));
+                                                                                    cont = true;
+                                                                                } else if (((InventoryHolder) chest.getState()).getInventory().contains(Material.getMaterial(blo[1]))) {
+                                                                                    ((InventoryHolder) chest.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(blo[1]), 1));
+                                                                                    cont = true;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        if (!cont) {
+                                                                            not = true;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                cont = true;
+                                                            }
+                                                        } else if (skip + icon == ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1) {
+                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("con", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1);
+                                                        }
+                                                        if (cont) {
+                                                            break Main;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (skip == 0 && !not) {
                                         ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).remove("con");
+                                        if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).get("own").toString()))).isOnline()) {
+                                            Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).get("own").toString())).sendMessage(ChatColor.DARK_PURPLE + "The structure " + ChatColor.LIGHT_PURPLE + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ChatColor.DARK_PURPLE + " has finished construction and is now operational");
+                                        }
                                         if (Config.isConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"))) {
-                                            tempHashMap.get("incometimer").put(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"), Config.get("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Income Timer"));
                                             ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"));
+                                            if (!Config.getString("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Type").equals("Archer")) {
+                                                if (!Config.getString("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Type").equals("Normal") && !Config.getString("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Type").equals("Multi")) {
+                                                    tempHashMap.get("incometimer").put(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"), Config.get("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Income Timer"));
+                                                } else {
+                                                    temparraylist.clear();
+                                                    temparraylist.addAll(Config.getConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Productions").getKeys(false));
+                                                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("pro", temparraylist.get(0));
+                                                }
+                                            }
                                         } else {
                                             ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"));
                                             serverdata.get("villages").get(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString()).put("vir", ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"));
                                         }
                                     } else if (cont) {
+                                        if (skip + icon == ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1) {
+                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).put("con", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("con")) + 1);
+                                        }
                                         if (Config.isConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str"))) {
-                                            if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + mat) <= Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
-                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + mat));
+                                            if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + nmat) <= Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
+                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + nmat));
                                             }
                                         } else {
-                                            if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + mat) <= Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
-                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + mat));
+                                            if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + nmat) <= Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
+                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + nmat));
                                             }
                                         }
-                                        Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).setType(mat);
-                                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
-                                            BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, nx, nz, tempyaml);
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                            BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, nz, Math.abs(nx - 17), tempyaml);
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                            BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, 17 - nx, 17 - nz, tempyaml);
+                                        if (!MainConversions.isMultiType(structure)) {
+                                            Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).setType(mat);
+                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, xx, zz, tempyaml);
+                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, xx, zz, tempyaml);
+                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, 17 - nx, 17 - nz, tempyaml);
+                                            } else {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, Math.abs(nz - 17), nx, tempyaml);
+                                            }
                                         } else {
-                                            BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, Math.abs(nz - 17), nx, tempyaml);
+                                            Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1).setType(mat);
+                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1), mat, ny, nx, nz, tempyaml, chx, chz);
+                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1), mat, ny, nz, Math.abs(nx - 17), tempyaml, chx, chz);
+                                            } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1), mat, ny, 17 - nx, 17 - nz, tempyaml, chx, chz);
+                                            } else {
+                                                BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x - chx) * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z - chz) * 16 + nz - 1), mat, ny, Math.abs(nz - 17), nx, tempyaml, chx, chz);
+                                            }
                                         }
                                     }
                                 }
@@ -564,19 +982,143 @@ public class RepetitiveMethods {
                                     for (String p : Config.getStringList("Village Ranks." + structure + ".Block Hp")) {
                                         if (!repaired) {
                                             String[] req = p.split(":");
-                                            if (((InventoryHolder) block.getState()).getInventory().contains(Material.getMaterial(req[0]), Integer.parseInt(req[1]))) {
-                                                ((InventoryHolder) block.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(req[0]), Integer.parseInt(req[1])));
-                                                if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]) <= Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
-                                                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]));
-                                                } else {
-                                                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp."));
+                                            if (Material.getMaterial(req[0]) != null) {
+                                                if (((InventoryHolder) block.getState()).getInventory().contains(Material.getMaterial(req[0]), Integer.parseInt(req[1]))) {
+                                                    ((InventoryHolder) block.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(req[0]), Integer.parseInt(req[1])));
+                                                    if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]) <= Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
+                                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]));
+                                                    } else {
+                                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp."));
+                                                    }
+                                                    repaired = true;
                                                 }
-                                                repaired = true;
+                                            } else {
+                                                String[] dat = req[0].split("_");
+                                                Material mat = Material.getMaterial(dat[0]);
+                                                ItemStack stack = null;
+                                                if (mat == WOOL) {
+                                                    switch (dat[1]) {
+                                                        case "BLACK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.BLACK.getWoolData());
+                                                            break;
+                                                        case "BLUE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.BLUE.getWoolData());
+                                                            break;
+                                                        case "BROWN":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.BROWN.getWoolData());
+                                                            break;
+                                                        case "CYAN":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.CYAN.getWoolData());
+                                                            break;
+                                                        case "GRAY":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.GRAY.getWoolData());
+                                                            break;
+                                                        case "GREEN":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.GREEN.getWoolData());
+                                                            break;
+                                                        case "LIGHT_BLUE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.LIGHT_BLUE.getWoolData());
+                                                            break;
+                                                        case "LIME":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.LIME.getWoolData());
+                                                            break;
+                                                        case "MAGENTA":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.MAGENTA.getWoolData());
+                                                            break;
+                                                        case "ORANGE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.ORANGE.getWoolData());
+                                                            break;
+                                                        case "PINK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.PINK.getWoolData());
+                                                            break;
+                                                        case "PURPLE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.PURPLE.getWoolData());
+                                                            break;
+                                                        case "RED":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.RED.getWoolData());
+                                                            break;
+                                                        case "SILVER":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.SILVER.getWoolData());
+                                                            break;
+                                                        case "WHITE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.WHITE.getWoolData());
+                                                            break;
+                                                        case "YELLOW":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), DyeColor.YELLOW.getWoolData());
+                                                            break;
+                                                    }
+                                                } else if (mat == SANDSTONE) {
+                                                    switch (dat[1]) {
+                                                        case "CRACKED":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), SandstoneType.CRACKED.getData());
+                                                            break;
+                                                        case "GLYPHED":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), SandstoneType.GLYPHED.getData());
+                                                            break;
+                                                        case "SMOOTH":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), SandstoneType.SMOOTH.getData());
+                                                            break;
+                                                    }
+                                                } else if (mat == STEP) {
+                                                    switch (dat[1]) {
+                                                        case "COBBLESTONE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.COBBLESTONE.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "STONE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.STONE.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "SANDSTONE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.SANDSTONE.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "BRICK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.BRICK.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "SMOOTH_BRICK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.SMOOTH_BRICK.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "QUARTZ":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.QUARTZ.getNewData((byte) 0).getData());
+                                                            break;
+                                                        case "NETHER_BRICK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), Material.NETHER_BRICK.getNewData((byte) 0).getData());
+                                                            break;
+                                                    }
+                                                } else {
+                                                    switch (dat[1]) {
+                                                        case "ACACIA":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.ACACIA.getData());
+                                                            break;
+                                                        case "BIRCH":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.BIRCH.getData());
+                                                            break;
+                                                        case "DARK_OAK":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.DARK_OAK.getData());
+                                                            break;
+                                                        case "GENERIC":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.GENERIC.getData());
+                                                            break;
+                                                        case "JUNGLE":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.JUNGLE.getData());
+                                                            break;
+                                                        case "REDWOOD":
+                                                            stack = new ItemStack(mat, Integer.parseInt(req[1]), TreeSpecies.REDWOOD.getData());
+                                                            break;
+                                                    }
+                                                }
+                                                if (((InventoryHolder) block.getState()).getInventory().contains(stack)) {
+                                                    ((InventoryHolder) block.getState()).getInventory().removeItem(stack);
+                                                    if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]) <= Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp")) {
+                                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + req[0]));
+                                                    } else {
+                                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp."));
+                                                    }
+                                                    repaired = true;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            } else if (!((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp").equals(Config.get("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"))) {
+                            } else if (!((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")).equals(Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"))) {
                                 for (ItemStack i : ((InventoryHolder) block.getState()).getInventory().getContents()) {
                                     if (!repaired) {
                                         for (String p : Config.getStringList("Village Structures." + structure + ".Block Hp")) {
@@ -637,32 +1179,83 @@ public class RepetitiveMethods {
                                             }
                                         }
                                     }
-                                }
-                            }
-                        }
-                        //INCOME TIME FOR STRUCTURES
-                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).containsKey("str") && !((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).containsKey("con")) {
-                            String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
-                            if (Config.isConfigurationSection("Village Structures." + structure)) {
-                                if (!Config.getString("Village Structures." + structure + ".Type").equals("Archer")) {
-                                    if (time % ((Integer) tempHashMap.get("incometimer").get(structure)) == 0 && ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) == Config.getInt("Village Structures." + structure + ".Total Hp")) {
-                                        tempfile = new File(structureFolder, structure + ".yml");
-                                        FileConfiguration tempyaml = new YamlConfiguration();
-                                        try {
-                                            tempyaml.load(tempfile);
-                                        } catch (IOException | InvalidConfigurationException ex) {
-                                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
-                                            block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.X") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + tempyaml.getInt("Main Chest.Z") - 1);
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                            block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + Math.abs(tempyaml.getInt("Main Chest.Z") - 16), ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + tempyaml.getInt("Main Chest.X") - 1);
-                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
-                                            block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + 16 - tempyaml.getInt("Main Chest.X"), ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + 16 - tempyaml.getInt("Main Chest.Z"));
+                                } else if (MainConversions.structureIncomeCheck(time, structure, w, x, z) && ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) == Config.getInt("Village Structures." + structure + ".Total Hp")) {
+                                    //INCOME TIME FOR STRUCTURES
+                                    String village = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString();
+                                    if (Config.getString("Village Structures." + structure + ".Type").equals("Normal") || Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+                                        String proc = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("pro").toString();
+                                        if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
+                                            Boolean cont = true;
+                                            for (String s : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
+                                                String[] req = s.split(":");
+                                                if (!((InventoryHolder) block.getState()).getInventory().contains(Material.getMaterial(req[0]), Integer.parseInt(req[1]))) {
+                                                    cont = false;
+                                                }
+                                            }
+                                            if (cont) {
+                                                for (String s : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
+                                                    String[] req = s.split(":");
+                                                    ((InventoryHolder) block.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(req[0]), Integer.parseInt(req[1])));
+                                                }
+                                                serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
+                                                if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                                    for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                                        String[] pro = p.split(":");
+                                                        ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                    }
+                                                }
+                                                if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                    Integer sx, sz;
+                                                    for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                        String[] pro = p.split(":");
+                                                        for (int i = 0; i < Integer.parseInt(pro[1]); i++) {
+                                                            do {
+                                                                sx = (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") + 9 - (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range"))));
+                                                                sz = (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") + 9 - (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range"))));
+                                                            } while (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(block.getLocation().getChunk().getX() * 16 + sx, block.getLocation().getBlockY() + 1, block.getLocation().getChunk().getZ() * 16 + sz).isLiquid() && !Bukkit.getWorld(UUID.fromString(w)).getBlockAt(sx, block.getLocation().getBlockY() + 1, sz).isEmpty());
+                                                            Entity s = Bukkit.getWorld(UUID.fromString(w)).spawnEntity(block.getChunk().getBlock(sx, block.getY() + 1, sz).getLocation(), EntityType.fromName(pro[0]));
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
+                                            }
+                                        } else if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                            for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                                String[] pro = p.split(":");
+                                                ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                            }
+                                            if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                Integer sx, sz;
+                                                for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                    String[] pro = p.split(":");
+                                                    do {
+                                                        sx = (-1 * Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (3 + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")));
+                                                        sz = (-1 * Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (3 + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")));
+                                                    } while (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(sx, block.getLocation().getBlockY() + 1, sz).isLiquid() || Bukkit.getWorld(UUID.fromString(w)).getBlockAt(sx, block.getLocation().getBlockY() + 1, sz).isEmpty());
+                                                    for (int i = 0; i < Integer.parseInt(pro[1]); i++) {
+                                                        Entity s = Bukkit.getWorld(UUID.fromString(w)).spawnEntity(block.getLocation().add(sx, 1, sz), EntityType.fromName(pro[0]));
+                                                    }
+                                                }
+                                            }
+                                            serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
                                         } else {
-                                            block = Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + tempyaml.getInt("Main Chest.Z") - 1, ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Main Chest.Y") - 2, (Integer) z * 16 + Math.abs(tempyaml.getInt("Main Chest.X") - 16));
+                                            if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                Integer sx, sz;
+                                                for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                    String[] pro = p.split(":");
+                                                    for (int i = 0; i < Integer.parseInt(pro[1]); i++) {
+                                                        do {
+                                                            sx = (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") + 9 - (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range"))));
+                                                            sz = (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range")) + (int) (Math.random() * (Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range") + 9 - (7 - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Animal Spawn Range"))));
+                                                        } while (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(block.getLocation().getChunk().getX() * 16 + sx, block.getLocation().getBlockY() + 1, block.getLocation().getChunk().getZ() * 16 + sz).isLiquid() && !Bukkit.getWorld(UUID.fromString(w)).getBlockAt(sx, block.getLocation().getBlockY() + 1, sz).isEmpty());
+                                                        Entity s = Bukkit.getWorld(UUID.fromString(w)).spawnEntity(block.getChunk().getBlock(sx, block.getY() + 1, sz).getLocation(), EntityType.fromName(pro[0]));
+                                                    }
+                                                }
+                                            }
+                                            serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
                                         }
-                                        String village = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString();
+                                    } else {
                                         if (Config.isSet("Village Structures." + structure + ".Required Materials")) {
                                             Boolean cont = true;
                                             for (String s : Config.getStringList("Village Structures." + structure + ".Required Materials")) {
@@ -706,8 +1299,8 @@ public class RepetitiveMethods {
             if (time % save == 0) {
                 MainConversions.onPluginSave();
             }
-            if (time % tax2 == 0) {
-                for (String e : serverdata.get("empires").keySet()) {
+            for (String e : serverdata.get("empires").keySet()) {
+                if (time % tax2 == 0) {
                     if (serverdata.get("empires").get(e).containsKey("tax")) {
                         taxes = Integer.parseInt(serverdata.get("empires").get(e).get("vau").toString());
                         for (String v : ((ArrayList<String>) serverdata.get("empires").get(e).get("vils"))) {
@@ -727,8 +1320,6 @@ public class RepetitiveMethods {
                         }
                     }
                 }
-            }
-            for (String e : serverdata.get("empires").keySet()) {
                 if (serverdata.get("empires").get(e).containsKey("ene")) {
                     ((HashMap) serverdata.get("empires").get(e).get("ene")).keySet().stream().filter((en) -> (((HashMap) serverdata.get("empires").get(e).get("ene")).get(en) != null)).map((en) -> {
                         ((HashMap) serverdata.get("empires").get(e).get("ene")).put(en, ((Integer) ((HashMap) serverdata.get("empires").get(e).get("ene")).get(en)) - 1);
@@ -738,7 +1329,10 @@ public class RepetitiveMethods {
                     });
                 }
             }
-            for (String s : serverdata.get("villages").keySet()) {
+            //The temparraylist eleminates the ConcurrentModificationException error (Maybe?)
+            temparraylist.clear();
+            temparraylist.addAll(serverdata.get("villages").keySet());
+            for (String s : ((ArrayList<String>) temparraylist)) {
                 if (serverdata.get("villages").get(s).containsKey("ene")) {
                     ((HashMap) serverdata.get("villages").get(s).get("ene")).keySet().stream().filter((e) -> (((HashMap) serverdata.get("villages").get(s).get("ene")).get(e) != null)).map((e) -> {
                         ((HashMap) serverdata.get("villages").get(s).get("ene")).put(e, ((Integer) ((HashMap) serverdata.get("villages").get(s).get("ene")).get(e)) - 1);
@@ -746,6 +1340,15 @@ public class RepetitiveMethods {
                     }).filter((e) -> (((Integer) ((HashMap) serverdata.get("villages").get(s).get("ene")).get(e)) == 0)).forEach((e) -> {
                         ((HashMap) serverdata.get("villages").get(s).get("ene")).put(e, null);
                     });
+                }
+                if (serverdata.get("villages").get(s).containsKey("inv")) {
+                    serverdata.get("villages").get(s).put("inv", ((Integer) serverdata.get("villages").get(s).get("inv")) - 1);
+                    if (((Integer) serverdata.get("villages").get(s).get("inv")) == 0) {
+                        serverdata.get("villages").get(s).remove("inv");
+                    }
+                    if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(s).get("own").toString()))).isOnline()) {
+                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(s).get("own").toString())).sendMessage(ChatColor.DARK_PURPLE + "The villages initial war immunity timer has expired and therefor other villages can now declare war on you");
+                    }
                 }
                 if (time % tax == 0) {
                     String rank = serverdata.get("villages").get(s).get("vir").toString();
@@ -795,3 +1398,80 @@ public class RepetitiveMethods {
         }, 0L, 20L);
     }
 }
+
+/* OLD CODE, IGNORE THIS UNLESS LADDER OR THE BELOW ISSUES COME UP!
+ if (mat == TORCH || mat == REDSTONE_TORCH_OFF || mat == REDSTONE_TORCH_ON || mat == LADDER) {
+ int dir = 0, cx = -1, cz = -1;
+ if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+ dir = 1;
+ xx = nz;
+ zz = Math.abs(nx - 17);
+ } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+ dir = 2;
+ xx = (17 - nx);
+ zz = (17 - nz);
+ } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("w")) {
+ dir = 3;
+ xx = Math.abs(nz - 17);
+ zz = nx;
+ }
+ switch (tempyaml.getString("Scematic." + chx + "." + chz + "." + ny + "." + xx + "." + zz + ".dat")) {
+ case "NORTH":
+ if (dir == 0) {
+ cz = 0;
+ } else if (dir == 1) {
+ cx = -2;
+ } else if (dir == 2) {
+ cz = -2;
+ } else {
+ cx = 0;
+ }
+ if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x + chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z + chz) * 16 + nz + cz).getType().equals(AIR)) {
+ cancel = true;
+ }
+ break;
+ case "EAST":
+ if (dir == 0) {
+ cx = -2;
+ } else if (dir == 1) {
+ cz = -2;
+ } else if (dir == 2) {
+ cx = 0;
+ } else {
+ cz = 0;
+ }
+ if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x + chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z + chz) * 16 + nz + cz).getType().equals(AIR)) {
+ cancel = true;
+ }
+ break;
+ case "SOUTH":
+ if (dir == 0) {
+ cz = -2;
+ } else if (dir == 1) {
+ cx = 0;
+ } else if (dir == 2) {
+ cz = 0;
+ } else {
+ cx = -2;
+ }
+ if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x + chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z + chz) * 16 + nz + cz).getType().equals(AIR)) {
+ cancel = true;
+ }
+ break;
+ case "WEST":
+ if (dir == 0) {
+ cx = 0;
+ } else if (dir == 1) {
+ cz = 0;
+ } else if (dir == 2) {
+ cx = -2;
+ } else {
+ cz = -2;
+ }
+ if (Bukkit.getWorld(UUID.fromString(w)).getBlockAt(((Integer) x + chx) * 16 + nx + cx, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, ((Integer) z + chz) * 16 + nz + cz).getType().equals(AIR)) {
+ cancel = true;
+ }
+ break;
+ }
+ }
+ */

@@ -37,9 +37,9 @@ public class DiplomacyCommands {
             serverdata.get(section).get(targetsection).put("ene", new HashMap<>());
         }
         if (section.equals("villages")) {
-            ((HashMap) serverdata.get(section).get(targetsection).get("ene")).put(targetsection, Config.get("Village Settings.War Time Delay"));
+            ((HashMap) serverdata.get(section).get(targetsection).get("ene")).put(playersection, Config.get("Village Settings.War Time Delay"));
         } else {
-            ((HashMap) serverdata.get(section).get(targetsection).get("ene")).put(targetsection, Config.get("Empire Settings.War Time Delay"));
+            ((HashMap) serverdata.get(section).get(targetsection).get("ene")).put(playersection, Config.get("Empire Settings.War Time Delay"));
         }
         if (serverdata.get(section).get(playersection).get("all") != null) {
             if (((ArrayList) serverdata.get(section).get(playersection).get("all")).contains(targetsection)) {
@@ -59,7 +59,7 @@ public class DiplomacyCommands {
         }
         Bukkit.getPlayer(UUID.fromString(playername)).sendMessage(ChatColor.BLUE + " you have successfully declared war on " + ChatColor.AQUA + targetsection);
         if (section.equals("villages")) {
-            if ((Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString()))).isOnline()) {
+            if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString()))).isOnline()) {
                 Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the village " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has declared war on you!");
             }
             temparraylist.clear();
@@ -71,7 +71,7 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(playersection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", Has declared war on you!");
             });
             temparraylist.clear();
@@ -83,12 +83,12 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(targetsection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", has declared war on " + ChatColor.LIGHT_PURPLE + targetsection);
             });
         } else {
             ((ArrayList<String>) serverdata.get("empires").get(targetsection).get("vils")).stream().map((v) -> {
-                if ((Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
+                if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
                     Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", leader of the empire " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has declared war on your empire!");
                 }
                 return v;
@@ -106,7 +106,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", Has declared war on you!");
                 });
             });
@@ -124,7 +124,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", has declared war on " + ChatColor.LIGHT_PURPLE + targetsection);
                 });
             });
@@ -146,7 +146,7 @@ public class DiplomacyCommands {
         }
         Bukkit.getPlayer(UUID.fromString(playername)).sendMessage(ChatColor.LIGHT_PURPLE + targetsection + ChatColor.DARK_PURPLE + " has already requested a truce with you so it has been done");
         if (section.equals("villages")) {
-            if ((Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString()))).isOnline()) {
+            if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString()))).isOnline()) {
                 Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the village " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the truce request and ended the war!");
             }
             temparraylist.clear();
@@ -158,7 +158,7 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(playersection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + " has agreed upon a truce and ended the war!");
             });
             temparraylist.clear();
@@ -170,13 +170,13 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(targetsection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + targetsection + ChatColor.DARK_PURPLE + " has agreed upon a truce and ended the war!");
             });
         } else {
             ((ArrayList<String>) serverdata.get("empires").get(targetsection).get("vils")).stream().map((v) -> {
-                if ((Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
-                    Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of empire " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the truce request and ended the war!");
+                if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
+                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of empire " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the truce request and ended the war!");
                 }
                 return v;
             }).map((v) -> {
@@ -193,7 +193,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + " has agreed upon a truce and ended the war!");
                 });
             });
@@ -211,7 +211,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + targetsection + ChatColor.DARK_PURPLE + " has agreed upon a truce and ended the war!");
                 });
             });
@@ -233,7 +233,7 @@ public class DiplomacyCommands {
         ((ArrayList) serverdata.get(section).get(playersection).get("all")).add(targetsection);
         Bukkit.getPlayer(UUID.fromString(playername)).sendMessage(ChatColor.DARK_PURPLE + "You have successfully created an alliance with " + ChatColor.LIGHT_PURPLE + targetsection);
         if (section.equals("villages")) {
-            if (Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).isOnline()) {
+            if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).isOnline()) {
                 Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the village" + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the alliance request");
             }
             temparraylist.clear();
@@ -245,7 +245,7 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(playersection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + " has created an alliance with you!");
             });
             temparraylist.clear();
@@ -257,13 +257,13 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(targetsection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + targetsection + ChatColor.DARK_PURPLE + " has created an alliance with you!");
             });
         } else {
             ((ArrayList<String>) serverdata.get("empires").get(targetsection).get("vils")).stream().map((v) -> {
-                if ((Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
-                    Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the empire " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the alliance request");
+                if ((Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString()))).isOnline()) {
+                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the empire " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has accepted the alliance request");
                 }
                 return v;
             }).map((v) -> {
@@ -280,7 +280,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + " has created an alliance with you!");
                 });
             });
@@ -298,7 +298,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + targetsection + ChatColor.DARK_PURPLE + " has created an alliance with you!");
                 });
             });
@@ -346,7 +346,7 @@ public class DiplomacyCommands {
         }
         Bukkit.getPlayer(UUID.fromString(playername)).sendMessage(ChatColor.DARK_PURPLE + "You have successfully removed your alliance with " + ChatColor.LIGHT_PURPLE + targetsection);
         if (section.equals("villages")) {
-            if (Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).isOnline()) {
+            if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).isOnline()) {
                 Bukkit.getPlayer(UUID.fromString(serverdata.get(section).get(targetsection).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + ", has removed their alliance with you");
             }
             temparraylist.clear();
@@ -358,7 +358,7 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(playersection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", has ended your alliance with " + ChatColor.LIGHT_PURPLE + targetsection);
             });
             temparraylist.clear();
@@ -370,7 +370,7 @@ public class DiplomacyCommands {
                     temparraylist.addAll((Collection<? extends String>) serverdata.get(section).get(targetsection).get("man"));
                 }
             }
-            temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+            temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the village " + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + "has ended the alliance");
             });
         } else {
@@ -388,7 +388,7 @@ public class DiplomacyCommands {
                 }
                 return v;
             }).forEach((_item) -> {
-                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + ", owner of the empire" + ChatColor.LIGHT_PURPLE + playersection + ChatColor.DARK_PURPLE + " has ended the alliance");
                 });
             });

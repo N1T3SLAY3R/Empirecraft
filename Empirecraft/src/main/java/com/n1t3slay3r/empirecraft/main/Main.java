@@ -25,6 +25,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -140,15 +141,18 @@ public class Main extends JavaPlugin {
         Config.addDefault("Global Settings.Villagesyml file", "off");
         Config.addDefault("Global Settings.Backup files", "on");
         Config.addDefault("Global Settings.Local Chat Range", 6);
+        Config.addDefault("Global Settings.Uncraftable Items", new ArrayList());
+        Config.addDefault("Global Settings.Unsmeltable Items", new ArrayList());
         Config.addDefault("Village Settings.Require Materials To Build", "on");
         Config.addDefault("Village Settings.Creation Cost", 1000);
         Config.addDefault("Village Settings.Initial Cash In Village Vault", 100);
         Config.addDefault("Village Settings.Name Max Length", 15);
         Config.addDefault("Village Settings.Home Teleport Delay", 2);
-        Config.addDefault("Village Settings.Build Delay", 2);
+        Config.addDefault("Village Settings.Build Delay", 1);
         Config.addDefault("Village Settings.Destruction Delay", 1);
         Config.addDefault("Village Settings.Tax Delay", 86400);
         Config.addDefault("Village Settings.War Time Delay", 86400);
+        Config.addDefault("Village Settings.Village Creation Immunity Timer", 172800);
         Config.addDefault("Village Settings.Debt Before Village Loss", 0);
         Config.addDefault("Village Settings.Toggle Settings.Fire Enabled", "on");
         Config.addDefault("Village Settings.Toggle Settings.Pvp Enabled", "on");
@@ -195,7 +199,7 @@ public class Main extends JavaPlugin {
         Config.addDefault("Player Plots.Outsiders.Buttons", "off");
         Config.addDefault("Player Plots.Outsiders.Levers", "off");
         Config.addDefault("Player Plots.Outsiders.Containers", "off");
-        if (!Config.isList("Empire Ranks")) {
+        if (!Config.isConfigurationSection("Empire Ranks")) {
             Config.addDefault("Empire Ranks.Example 1.Number of creatable teleport locations", 2);
             Config.addDefault("Empire Ranks.Example 1.Upkeep", 500);
             Config.addDefault("Empire Ranks.Example 1.Revenue", 0);
@@ -245,7 +249,9 @@ public class Main extends JavaPlugin {
         }
         if (Config.isConfigurationSection("Village Structures")) {
             Config.getConfigurationSection("Village Structures").getKeys(false).stream().forEach((s) -> {
-                tempHashMap.get("incometimer").put(s, Config.get("Village Structures." + s + ".Income Timer"));
+                if (!Config.get("Village Structures." + s + ".Type").equals("Normal") && !Config.get("Village Structures." + s + ".Type").equals("Archer")) {
+                    tempHashMap.get("incometimer").put(s, Config.get("Village Structures." + s + ".Income Timer"));
+                }
             });
         }
         RepetitiveMethods.test(this);
@@ -297,7 +303,7 @@ public class Main extends JavaPlugin {
                                                         serverdata.get("playerdata").get(player.getUniqueId().toString()).remove("vii");
                                                         serverdata.get("playerdata").get(player.getUniqueId().toString()).put("village", tempstring);
                                                         sender.sendMessage(ChatColor.BLUE + "You have joined the village " + ChatColor.AQUA + tempstring);
-                                                        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())) != null) {
+                                                        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
                                                             Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + " has joined the village");
                                                         }
                                                         temparraylist.clear();
@@ -309,7 +315,7 @@ public class Main extends JavaPlugin {
                                                                 temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(tempstring).get("man"));
                                                             }
                                                         }
-                                                        temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+                                                        temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                                                             if (!player.getName().equals(p)) {
                                                                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + " has joined the village");
                                                             }
@@ -342,20 +348,24 @@ public class Main extends JavaPlugin {
                             case "invitations":
                                 if (args.length == 1) {
                                     if (player.hasPermission("empirecraft.invitations")) {
-                                        if (serverdata.get("playerdata").get(player.getUniqueId().toString()).get("vii") != null) {
-                                            tempstring = ChatColor.BLUE + "";
-                                            temparraylist.clear();
-                                            temparraylist.addAll((ArrayList) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("vii"));
-                                            temparraylist.stream().map((s) -> {
-                                                tempstring += s;
-                                                return s;
-                                            }).map((s) -> {
-                                                temparraylist.remove(s);
-                                                return s;
-                                            }).filter((_item) -> (!temparraylist.isEmpty())).forEach((_item) -> {
-                                                tempstring += (ChatColor.BLUE + ", " + ChatColor.AQUA);
-                                            });
-                                            sender.sendMessage(tempstring);
+                                        if (serverdata.get("playerdata").containsKey(player.getUniqueId().toString())) {
+                                            if (serverdata.get("playerdata").get(player.getUniqueId().toString()).containsKey("vii")) {
+                                                tempstring = ChatColor.BLUE + "";
+                                                temparraylist.clear();
+                                                temparraylist.addAll((ArrayList) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("vii"));
+                                                temparraylist.stream().map((s) -> {
+                                                    tempstring += s;
+                                                    return s;
+                                                }).map((s) -> {
+                                                    temparraylist.remove(s);
+                                                    return s;
+                                                }).filter((_item) -> (!temparraylist.isEmpty())).forEach((_item) -> {
+                                                    tempstring += (ChatColor.BLUE + ", " + ChatColor.AQUA);
+                                                });
+                                                sender.sendMessage(tempstring);
+                                            } else {
+                                                sender.sendMessage(ChatColor.DARK_RED + "You have no village invite requests");
+                                            }
                                         } else {
                                             sender.sendMessage(ChatColor.DARK_RED + "You have no village invite requests");
                                         }
@@ -651,7 +661,7 @@ public class Main extends JavaPlugin {
                                                                 tempstring = tempstring.trim();
                                                                 tempfile = new File(structureFolder, tempstring + ".yml");
                                                                 if (!tempfile.exists()) {
-                                                                    switch (args[3]) {
+                                                                    switch (args[3].toLowerCase()) {
                                                                         case "normal":
                                                                             if (tempHashMap.get("mainchest").get(player.getUniqueId().toString()) == null) {
                                                                                 tempHashMap.get("mainchest").put(player.getUniqueId().toString(), new HashMap<>());
@@ -662,6 +672,19 @@ public class Main extends JavaPlugin {
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             sender.sendMessage(ChatColor.BLUE + "Please right click a block with a " + ChatColor.AQUA + "STICK" + ChatColor.BLUE + " in this structure size to be the main chest. (any items produced or consumed, especially for building the structure will be found/put in here)");
+                                                                            break;
+                                                                        case "multi":
+                                                                            if (tempHashMap.get("mainchest").get(player.getUniqueId().toString()) == null) {
+                                                                                tempHashMap.get("mainchest").put(player.getUniqueId().toString(), new HashMap<>());
+                                                                            }
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "multi");
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunks", new ArrayList<>());
+                                                                            ((ArrayList) ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).get("chunks")).add(Bukkit.getWorld(player.getWorld().getUID()).getChunkAt(0, 0));
+                                                                            sender.sendMessage(ChatColor.BLUE + "Type the command " + ChatColor.AQUA + "/ec admin addchunk" + ChatColor.BLUE + " while standing in a different chunk to add it to the size on the multi structure, when you are done right click a block with a stick in the original chunk to become its main chest");
                                                                             break;
                                                                         case "camp":
                                                                             if (tempHashMap.get("mainchest").get(player.getUniqueId().toString()) == null) {
@@ -755,6 +778,7 @@ public class Main extends JavaPlugin {
                                             if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.admin.structuretypes")) {
                                                     sender.sendMessage(ChatColor.BLUE + "Available Structure Types: " + ChatColor.AQUA + "Normal" + ChatColor.BLUE + " (Standard), "
+                                                            + ChatColor.AQUA + "Multi " + ChatColor.BLUE + "(Choose multiple chunks to become one structure, it can vary in its shape depending on how you define it), "
                                                             + ChatColor.AQUA + "Camp " + ChatColor.BLUE + "(Does not need to be built on a claimed plot/built on different worlds), "
                                                             + ChatColor.AQUA + "Archer " + ChatColor.BLUE + "(Shoots an arrow(s) at enemy players), "
                                                             + ChatColor.AQUA + "Rank " + ChatColor.BLUE + "(Base/main/home structure)");
@@ -763,6 +787,31 @@ public class Main extends JavaPlugin {
                                                 }
                                             } else {
                                                 sender.sendMessage(ChatColor.DARK_GREEN + "/ec admin structuretypes" + ChatColor.GREEN + " Displays a list of the possible structure types that you can create");
+                                            }
+                                            break;
+                                        case "addchunk":
+                                            if (args.length == 2) {
+                                                if (player.hasPermission("empirecraft.admin.addchunk")) {
+                                                    if (tempHashMap.get("mainchest").get(player.getUniqueId().toString()) != null) {
+                                                        if (((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).get("type").equals("multi")) {
+                                                            Chunk c = ((Chunk) ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).get("chunk"));
+                                                            if (!((ArrayList<Chunk>) ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).get("chunks")).contains(Bukkit.getWorld(player.getWorld().getUID()).getChunkAt(c.getX() - player.getLocation().getChunk().getX(), c.getZ() - player.getLocation().getChunk().getZ()))) {
+                                                                ((ArrayList) ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).get("chunks")).add(Bukkit.getWorld(player.getWorld().getUID()).getChunkAt(c.getX() - player.getLocation().getChunk().getX(), c.getZ() - player.getLocation().getChunk().getZ()));
+                                                                sender.sendMessage(ChatColor.BLUE + "You have successfully added the chunk X:" + ChatColor.AQUA + player.getLocation().getChunk().getX() + ChatColor.BLUE + ", Z:" + ChatColor.AQUA + player.getLocation().getChunk().getZ() + ChatColor.BLUE + ", to the multi structure you are creating");
+                                                            } else {
+                                                                sender.sendMessage(ChatColor.DARK_RED + "This chunk, X: " + ChatColor.RED + c.getX() + ChatColor.DARK_RED + ", Z: " + ChatColor.RED + c.getZ() + ChatColor.DARK_RED + ", has already been added to the structure database");
+                                                            }
+                                                        } else {
+                                                            sender.sendMessage(ChatColor.DARK_RED + "You can only increase the structure size of multi chunk structure types");
+                                                        }
+                                                    } else {
+                                                        sender.sendMessage(ChatColor.DARK_RED + "You are currently not designing any structures");
+                                                    }
+                                                } else {
+                                                    sender.sendMessage(ChatColor.DARK_RED + "You lack the permissions to use this command");
+                                                }
+                                            } else {
+                                                sender.sendMessage(ChatColor.DARK_GREEN + "/ec admin addchunk" + ChatColor.GREEN + " Adds the chunk to a multichunk upon creating one");
                                             }
                                             break;
                                         case "1":
@@ -836,8 +885,8 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.retire")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", args[2])) {
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(args[2]);
+                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
                                                                     }
@@ -845,17 +894,19 @@ public class Main extends JavaPlugin {
                                                                         serverdata.get("villages").get(playervillage).put("man", new ArrayList<>());
                                                                     }
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).add(playername);
-                                                                    serverdata.get("villages").get(playervillage).put("own", args[2]);
-                                                                    Bukkit.getPlayer(args[2]).sendMessage(ChatColor.DARK_PURPLE + "You have been promoted to a manager");
+                                                                    serverdata.get("villages").get(playervillage).put("own", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                                    if (Bukkit.getOfflinePlayer(args[2]).isOnline()) {
+                                                                        Bukkit.getPlayer(args[2]).sendMessage(ChatColor.DARK_PURPLE + "You have been promoted to a manager");
+                                                                    }
                                                                     sender.sendMessage(ChatColor.BLUE + "You have successfully given " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " leadership to the village, and you have been set to a village manager");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", args[2])) {
+                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).add(playername);
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(args[2]);
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("man");
                                                                     }
-                                                                    serverdata.get("villages").get(playervillage).put("own", args[2]);
-                                                                    if (Bukkit.getPlayer(args[2]) != null) {
+                                                                    serverdata.get("villages").get(playervillage).put("own", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                                    if (Bukkit.getOfflinePlayer(args[2]).isOnline()) {
                                                                         Bukkit.getPlayer(args[2]).sendMessage(ChatColor.DARK_PURPLE + "You have been promoted to a manager");
                                                                     }
                                                                     sender.sendMessage(ChatColor.BLUE + "You have successfully given " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " leadership to the village, and you have been set to a village manager");
@@ -878,18 +929,18 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.promote")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
+                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.RED + args[2] + ChatColor.DARK_RED + " is already a manager of the village");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     if (serverdata.get("villages").get(playervillage).get("man") == null) {
                                                                         serverdata.get("villages").get(playervillage).put("man", new ArrayList<>());
                                                                     }
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).add(Bukkit.getPlayer(args[2]).getUniqueId().toString());
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).add(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
                                                                     }
-                                                                    if (Bukkit.getPlayer(args[2]) != null) {
+                                                                    if (Bukkit.getOfflinePlayer(args[2]).isOnline()) {
                                                                         Bukkit.getPlayer(args[2]).sendMessage(ChatColor.DARK_PURPLE + "You have been promoted to a manager");
                                                                     }
                                                                     sender.sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has successfully become a village manager!");
@@ -912,14 +963,14 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.demote")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
+                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.DARK_RED + args[2] + " is already a member of the village");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     if (serverdata.get("villages").get(playervillage).get("mem") == null) {
                                                                         serverdata.get("villages").get(playervillage).put("mem", new ArrayList<>());
                                                                     }
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).add(Bukkit.getPlayer(args[2]).getUniqueId().toString());
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).add(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("man");
                                                                     }
@@ -1084,13 +1135,23 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (serverdata.get("villages").get(playervillage).get("ene") != null) {
-                                                                                        if (!((HashMap) serverdata.get("villages").get(playervillage).get("ene")).containsKey(tempstring)) {
-                                                                                            DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                    if (!serverdata.get("villages").get(playervillage).containsKey("inv")) {
+                                                                                        if (serverdata.get("villages").get(playervillage).get("ene") != null) {
+                                                                                            if (!((HashMap) serverdata.get("villages").get(playervillage).get("ene")).containsKey(tempstring)) {
+                                                                                                if (!serverdata.get("villages").get(tempstring).containsKey("inv")) {
+                                                                                                    DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                                } else {
+                                                                                                    sender.sendMessage(ChatColor.DARK_RED + "The village " + ChatColor.RED + tempstring + ChatColor.DARK_RED + ", still has village creation immunity for " + ChatColor.RED + serverdata.get("villages").get(tempstring).get("inv") + ChatColor.DARK_RED + " seconds");
+                                                                                                }
+                                                                                            } else {
+                                                                                                sender.sendMessage(ChatColor.DARK_RED + "You are already at war with " + ChatColor.RED + tempstring);
+                                                                                            }
                                                                                         } else {
-                                                                                            sender.sendMessage(ChatColor.DARK_RED + "You are already at war with " + ChatColor.RED + tempstring);
+                                                                                            DiplomacyCommands.War("villages", playervillage, tempstring, playername);
                                                                                         }
                                                                                     } else {
+                                                                                        serverdata.get("villages").get(playervillage).remove("inv");
+                                                                                        sender.sendMessage(ChatColor.DARK_RED + "Your village creation immunity has been removed for declaring war");
                                                                                         DiplomacyCommands.War("villages", playervillage, tempstring, playername);
                                                                                     }
                                                                                 } else {
@@ -1128,8 +1189,8 @@ public class Main extends JavaPlugin {
                                                                                                 }
                                                                                                 ((ArrayList) serverdata.get("villages").get(tempstring).get("trr")).add(playervillage);
                                                                                                 sender.sendMessage(ChatColor.BLUE + "You have successfully sent a truce request to " + ChatColor.AQUA + tempstring);
-                                                                                                if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())) != null) {
-                                                                                                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.AQUA + playername + ChatColor.BLUE + ", has requested a truce with you, type /vil owner acceptrequest " + ChatColor.AQUA + playervillage + ChatColor.BLUE + " to end this war");
+                                                                                                if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
+                                                                                                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + ", has requested a truce with you, type /vil owner acceptrequest " + ChatColor.AQUA + playervillage + ChatColor.BLUE + " to end this war");
                                                                                                 }
                                                                                             } else {
                                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You have already requested a truce with " + ChatColor.RED + tempstring);
@@ -1176,8 +1237,8 @@ public class Main extends JavaPlugin {
                                                                                                     }
                                                                                                     ((ArrayList) serverdata.get("villages").get(tempstring).get("alr")).add(playervillage);
                                                                                                     sender.sendMessage(ChatColor.BLUE + "You have successfully sent an alliance request to " + ChatColor.AQUA + tempstring);
-                                                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())) != null) {
-                                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.AQUA + playername + ChatColor.BLUE + ", has requested an alliance with you, type /vil owner acceptrequest " + ChatColor.AQUA + playervillage + ChatColor.BLUE + " to form the alliance");
+                                                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
+                                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + ", has requested an alliance with you, type /vil owner acceptrequest " + ChatColor.AQUA + playervillage + ChatColor.BLUE + " to form the alliance");
                                                                                                     }
                                                                                                 } else {
                                                                                                     sender.sendMessage(ChatColor.DARK_RED + "You have already requested an alliance with " + ChatColor.RED + tempstring);
@@ -1308,8 +1369,8 @@ public class Main extends JavaPlugin {
                                                                                             serverdata.get("villages").get(playervillage).remove("alr");
                                                                                         }
                                                                                         sender.sendMessage(ChatColor.DARK_PURPLE + "You have successfully denied " + ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + "'s alliance request");
-                                                                                        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
-                                                                                            Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + playername + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + ", has denied your alliance request");
+                                                                                        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
+                                                                                            Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + ", has denied your alliance request");
                                                                                         }
                                                                                     } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "trr", tempstring)) {
                                                                                         ((ArrayList) serverdata.get("villages").get(playervillage).get("trr")).remove(tempstring);
@@ -1317,8 +1378,8 @@ public class Main extends JavaPlugin {
                                                                                             serverdata.get("villages").get(playervillage).remove("trr");
                                                                                         }
                                                                                         sender.sendMessage(ChatColor.DARK_PURPLE + "You have successfully denied " + ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + "'s truce request");
-                                                                                        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
-                                                                                            Bukkit.getPlayer(UUID.fromString(Villages.get(tempstring + ".owner").toString())).sendMessage(ChatColor.LIGHT_PURPLE + playername + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + ", has denied your truce request");
+                                                                                        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
+                                                                                            Bukkit.getPlayer(UUID.fromString(Villages.get(tempstring + ".owner").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + ", has denied your truce request");
                                                                                         }
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.RED + tempstring + ChatColor.DARK_RED + " currently has no requests of you");
@@ -1373,6 +1434,7 @@ public class Main extends JavaPlugin {
                                                                 break;
                                                             default:
                                                                 sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil owner diplomacy <page>");
+                                                                break;
                                                         }
                                                     } else {
                                                         sender.sendMessage(ChatColor.DARK_GREEN + "                                        EMPIRECRAFT\n/vil owner diplomacy war <name>" + ChatColor.GREEN + " Declare war on the enemy village\n"
@@ -1382,9 +1444,8 @@ public class Main extends JavaPlugin {
                                                                 + ChatColor.DARK_GREEN + "page <1/2>");
                                                     }
                                                 default:
-                                                    if (!args[1].equals("diplomacy")) {
-                                                        sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil owner <page>");
-                                                    }
+                                                    sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil owner <page>");
+                                                    break;
                                             }
                                         } else {
                                             sender.sendMessage(ChatColor.DARK_GREEN + "                                        EMPIRECRAFT\n/vil owner retire <name>" + ChatColor.GREEN + " Changes the leader of your village and sets you to an assistant\n"
@@ -1401,13 +1462,13 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.invite")) {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                Player tempplayer = Bukkit.getPlayer(args[2]);
+                                                                Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                 if (tempplayer != null) {
-                                                                    if (serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()) != null) {
-                                                                        if (serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).get("vii") != null) {
-                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()), "vii", playervillage)) {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "app", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
-                                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    if (serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()) != null) {
+                                                                        if (serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).get("vii") != null) {
+                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()), "vii", playervillage)) {
+                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "app", tempplayer.getUniqueId().toString())) {
+                                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(tempplayer.getUniqueId().toString());
                                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).isEmpty()) {
                                                                                         serverdata.get("villages").get(playervillage).remove("app");
                                                                                     }
@@ -1416,7 +1477,7 @@ public class Main extends JavaPlugin {
                                                                                     if (tempplayer.isOnline()) {
                                                                                         tempplayer.sendMessage(ChatColor.BLUE + "You have been successfully added into the village " + ChatColor.AQUA + playervillage);
                                                                                     }
-                                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())) != null) {
+                                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).isOnline()) {
                                                                                         Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has joined the village");
                                                                                     }
                                                                                     temparraylist.clear();
@@ -1426,32 +1487,32 @@ public class Main extends JavaPlugin {
                                                                                     if (serverdata.get("villages").get(playervillage).get("man") != null) {
                                                                                         temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(playervillage).get("man"));
                                                                                     }
-                                                                                    temparraylist.stream().filter((p) -> (Bukkit.getPlayer(p).isOnline())).forEach((p) -> {
+                                                                                    temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(p).isOnline())).forEach((p) -> {
                                                                                         if (!playername.equals(p)) {
                                                                                             Bukkit.getPlayer(p).sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has joined the village");
                                                                                         }
                                                                                     });
                                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).add(args[2]);
-                                                                                } else if (serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()) == null) {
-                                                                                    serverdata.get("playerdata").put(Bukkit.getPlayer(args[2]).getUniqueId().toString(), new HashMap<>());
+                                                                                } else if (serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()) == null) {
+                                                                                    serverdata.get("playerdata").put(tempplayer.getUniqueId().toString(), new HashMap<>());
                                                                                 }
-                                                                                serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).put("vii", new ArrayList<>());
-                                                                                ((ArrayList) serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).get("vii")).add(playervillage);
+                                                                                serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).put("vii", new ArrayList<>());
+                                                                                ((ArrayList) serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).get("vii")).add(playervillage);
                                                                                 tempplayer.sendMessage(ChatColor.DARK_PURPLE + "You have been successfully invited to join the village " + ChatColor.LIGHT_PURPLE + serverdata.get("playerdata").get(playername).get("village"));
                                                                                 sender.sendMessage(ChatColor.BLUE + "You have been successfully invited " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " to join the village");
                                                                             } else {
                                                                                 sender.sendMessage(ChatColor.RED + args[2] + ChatColor.DARK_RED + " has already been invited to join the village");
                                                                             }
                                                                         } else {
-                                                                            serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).put("vii", new ArrayList<>());
-                                                                            ((ArrayList) serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).get("vii")).add(playervillage);
+                                                                            serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).put("vii", new ArrayList<>());
+                                                                            ((ArrayList) serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).get("vii")).add(playervillage);
                                                                             tempplayer.sendMessage(ChatColor.DARK_PURPLE + "You have been successfully invited to join the village " + ChatColor.LIGHT_PURPLE + serverdata.get("playerdata").get(playername).get("village"));
                                                                             sender.sendMessage(ChatColor.BLUE + "You have been successfully invited " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " to join the village");
                                                                         }
                                                                     } else {
-                                                                        serverdata.get("playerdata").put(Bukkit.getPlayer(args[2]).getUniqueId().toString(), new HashMap<>());
-                                                                        serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).put("vii", new ArrayList<>());
-                                                                        ((ArrayList) serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).get("vii")).add(playervillage);
+                                                                        serverdata.get("playerdata").put(tempplayer.getUniqueId().toString(), new HashMap<>());
+                                                                        serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).put("vii", new ArrayList<>());
+                                                                        ((ArrayList) serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).get("vii")).add(playervillage);
                                                                         tempplayer.sendMessage(ChatColor.DARK_PURPLE + "You have been successfully invited to join the village " + ChatColor.LIGHT_PURPLE + serverdata.get("playerdata").get(playername).get("village"));
                                                                         sender.sendMessage(ChatColor.BLUE + "You have been successfully invited " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " to join the village");
                                                                     }
@@ -1474,44 +1535,44 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.kick")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("man");
                                                                     }
-                                                                    serverdata.get("playerdata").remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    serverdata.get("playerdata").remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     sender.sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has been successfully kicked from the village");
-                                                                    Player tempplayer = Bukkit.getPlayer(args[2]);
+                                                                    Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                     if (tempplayer.isOnline()) {
-                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getPlayer(UUID.fromString(playername)).getName());
+                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getOfflinePlayer(UUID.fromString(playername)).getName());
                                                                     }
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
                                                                     }
-                                                                    serverdata.get("playerdata").remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    serverdata.get("playerdata").remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     sender.sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has been successfully kicked from the village");
-                                                                    Player tempplayer = Bukkit.getPlayer(args[2]);
+                                                                    Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                     if (tempplayer.isOnline()) {
-                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getPlayer(UUID.fromString(playername)).getName());
+                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getOfflinePlayer(UUID.fromString(playername)).getName());
                                                                     }
                                                                 } else {
                                                                     sender.sendMessage(ChatColor.RED + args[2] + ChatColor.DARK_RED + " does not exsist in the village database");
                                                                 }
                                                             } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
+                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot kick " + ChatColor.RED + args[2] + ChatColor.DARK_RED + ", because they are also a manager like yourself");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
-                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                    ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
                                                                     }
-                                                                    serverdata.get("playerdata").remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    serverdata.get("playerdata").remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     sender.sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has been successfully kicked from the village");
-                                                                    Player tempplayer = Bukkit.getPlayer(args[2]);
+                                                                    Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                     if (tempplayer.isOnline()) {
-                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getPlayer(UUID.fromString(playername)).getName());
+                                                                        tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getOfflinePlayer(UUID.fromString(playername)).getName());
                                                                     }
                                                                 } else if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot kick the owner of your village");
@@ -1536,8 +1597,10 @@ public class Main extends JavaPlugin {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).get("app") != null) {
                                                                     tempstring = ChatColor.BLUE + "";
-                                                                    temparraylist.stream().map((s) -> {
-                                                                        tempstring += Bukkit.getPlayer(UUID.fromString(s)).getName();
+                                                                    temparraylist.clear();
+                                                                    temparraylist.addAll((ArrayList) serverdata.get("villages").get(playervillage).get("app"));
+                                                                    ((ArrayList<String>) serverdata.get("villages").get(playervillage).get("app")).stream().map((s) -> {
+                                                                        tempstring += Bukkit.getOfflinePlayer(UUID.fromString(s)).getName();
                                                                         return s;
                                                                     }).map((s) -> {
                                                                         temparraylist.remove(s);
@@ -1564,19 +1627,19 @@ public class Main extends JavaPlugin {
                                                         if (player.hasPermission("empirecraft.village.manage.accept")) {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).get("app") != null) {
-                                                                    if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).contains(Bukkit.getPlayer(args[2]).getUniqueId().toString())) {
-                                                                        ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                    if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).contains(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                        ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                         if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).isEmpty()) {
                                                                             serverdata.get("villages").get(playervillage).remove("app");
                                                                         }
-                                                                        serverdata.get("playerdata").put(Bukkit.getPlayer(args[2]).getUniqueId().toString(), new HashMap<>());
-                                                                        serverdata.get("playerdata").get(Bukkit.getPlayer(args[2]).getUniqueId().toString()).put("village", playervillage);
+                                                                        serverdata.get("playerdata").put(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString(), new HashMap<>());
+                                                                        serverdata.get("playerdata").get(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString()).put("village", playervillage);
                                                                         sender.sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has been successfully added into the village");
-                                                                        Player tempplayer = Bukkit.getPlayer(args[2]);
+                                                                        Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                         if (tempplayer.isOnline()) {
                                                                             tempplayer.sendMessage(ChatColor.BLUE + "You have been successfully added into the village " + ChatColor.AQUA + playervillage);
                                                                         }
-                                                                        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())) != null) {
+                                                                        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())) != null) {
                                                                             Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has joined the village");
                                                                         }
                                                                         temparraylist.clear();
@@ -1588,10 +1651,10 @@ public class Main extends JavaPlugin {
                                                                         if (serverdata.get("villages").get(playervillage).get("man") != null) {
                                                                             temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(playervillage).get("man"));
                                                                         }
-                                                                        temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline() && !playername.equals(p))).forEach((p) -> {
+                                                                        temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline() && !playername.equals(p))).forEach((p) -> {
                                                                             Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.AQUA + args[2] + ChatColor.BLUE + " has joined the village");
                                                                         });
-                                                                        ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).add(Bukkit.getPlayer(args[2]).getUniqueId().toString());
+                                                                        ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).add(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     } else {
                                                                         sender.sendMessage(ChatColor.DARK_RED + "This player was not found in the village applications database");
                                                                     }
@@ -1671,7 +1734,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.claim")) {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                (Config.getConfigurationSection("Village Ranks").getKeys(false)).stream().filter((o) -> (((String) serverdata.get("villages").get(playervillage).get("vir")).equals(o))).forEach((o) -> {
+                                                                (Config.getConfigurationSection("Village Ranks").getKeys(false)).stream().filter((o) -> (serverdata.get("villages").get(playervillage).get("vir").toString().equals(o))).forEach((o) -> {
                                                                     if (((int) serverdata.get("villages").get(playervillage).get("plc")) < Config.getInt("Village Ranks." + o + ".Max Plots")) {
                                                                         if (!MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                             if (getServer().getPluginManager().getPlugin("WorldGuard") == null) {
@@ -1753,7 +1816,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.unclaim")) {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (!MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (!((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("str")) {
                                                                             serverdata.get("villages").get(playervillage).replace("plc", ((int) serverdata.get("villages").get(playervillage).get("plc")) - 1);
@@ -1802,13 +1865,13 @@ public class Main extends JavaPlugin {
                                                     break;
                                                 case "build":
                                                     if (args.length > 3) {
-                                                        if (player.hasPermission("empirecraft.village.manage.build")) {
+                                                        tempstring = "";
+                                                        for (int i = 3; i < args.length; i++) {
+                                                            tempstring += args[i] + " ";
+                                                        }
+                                                        tempstring = tempstring.trim();
+                                                        if (player.hasPermission("empirecraft.village.manage.build.*") || player.hasPermission("empirecraft.village.manage.build." + tempstring)) {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                tempstring = "";
-                                                                for (int i = 3; i < args.length; i++) {
-                                                                    tempstring += args[i] + " ";
-                                                                }
-                                                                tempstring = tempstring.trim();
                                                                 ManageCommands.buildInitiation(sender, player, playervillage, args);
                                                             } else {
                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are not a manager of this village!");
@@ -1864,7 +1927,7 @@ public class Main extends JavaPlugin {
                                                                             if (!init) {
                                                                                 tempstring += (ChatColor.BLUE + ", " + ChatColor.AQUA);
                                                                             }
-                                                                            tempstring += s;
+                                                                            tempstring += s + " (" + Config.getString("Village Structures." + s + ".Type") + ")";
                                                                             init = false;
                                                                         } else {
                                                                             cont = true;
@@ -1897,39 +1960,75 @@ public class Main extends JavaPlugin {
                                                                 String tempstring2 = "";
                                                                 if (tempfile.exists()) {
                                                                     if (Config.isConfigurationSection("Village Structures." + tempstring)) {
-                                                                        tempstring2 += ChatColor.BLUE + "                                        " + ChatColor.AQUA + tempstring
+                                                                        tempstring2 = ChatColor.BLUE + "                                        " + ChatColor.AQUA + tempstring
                                                                                 + ChatColor.BLUE + "\nType: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Type")
                                                                                 + ChatColor.BLUE + "          Creation Cost: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Creation Cost")
-                                                                                + ChatColor.BLUE + "          Income Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Income Timer")
-                                                                                + ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Upkeep")
-                                                                                + ChatColor.BLUE + "          Revenue: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Revenue")
                                                                                 + ChatColor.BLUE + "          Total Hp: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Total Hp");
+                                                                        if (Config.getString("Village Structures." + tempstring + ".Type").equals("Archer")) {
+                                                                            tempstring2 += ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Upkeep")
+                                                                                    + ChatColor.BLUE + "\nArrow Properties (Type Value): " + ChatColor.AQUA
+                                                                                    + ChatColor.BLUE + "\nBounce: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Bounce")
+                                                                                    + ChatColor.BLUE + "          Critical: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Critical")
+                                                                                    + ChatColor.BLUE + "          Knockback: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Knockback")
+                                                                                    + ChatColor.BLUE + "\nFire Ticks: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Fire Ticks")
+                                                                                    + ChatColor.BLUE + "          Arrow Speed: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Arrow Speed")
+                                                                                    + ChatColor.BLUE + "          Arrow Spread: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Arrow Spread")
+                                                                                    + ChatColor.BLUE + "\nArrows Fired: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Arrows Fired")
+                                                                                    + ChatColor.BLUE + "          Range (Chunks): " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Range");
+                                                                        } else if (!Config.getString("Village Structures." + tempstring + ".Type").equals("Normal")) {
+                                                                            tempstring += ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Income Timer")
+                                                                                    + ChatColor.BLUE + "          Upkeep: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Upkeep")
+                                                                                    + ChatColor.BLUE + "          Revenue: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Revenue");
+                                                                        }
                                                                         if (Config.isList("Village Structures." + tempstring + ".Upgraded From")) {
                                                                             tempstring2 += ChatColor.BLUE + "\nUpgraded From: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Upgraded From");
                                                                         }
-                                                                        if (Config.isList("Village Structures." + tempstring + ".Required Materials")) {
-                                                                            tempstring2 = ChatColor.BLUE + "Required Materials (Type/Amount): \n" + ChatColor.AQUA;
-                                                                            temparraylist.clear();
-                                                                            temparraylist.addAll(Config.getStringList("Village Structures." + tempstring + ".Required Materials"));
-                                                                            for (String s : Config.getStringList("Village Structures." + tempstring + ".Required Materials")) {
-                                                                                String[] req = s.split(":");
-                                                                                tempstring2 += req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
-                                                                                temparraylist.remove(s);
-                                                                                if (!temparraylist.isEmpty()) {
-                                                                                    tempstring2 += (ChatColor.BLUE + ", " + ChatColor.AQUA);
+                                                                        if (!Config.getString("Village Structures." + tempstring + ".Type").equals("Normal")) {
+                                                                            if (Config.isList("Village Structures." + tempstring + ".Required Materials")) {
+                                                                                tempstring2 = ChatColor.BLUE + "\nRequired Materials (Type/Amount): \n" + ChatColor.AQUA;
+                                                                                temparraylist.clear();
+                                                                                temparraylist.addAll(Config.getStringList("Village Structures." + tempstring + ".Required Materials"));
+                                                                                for (String s : Config.getStringList("Village Structures." + tempstring + ".Required Materials")) {
+                                                                                    String[] req = s.split(":");
+                                                                                    tempstring2 += req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                                                                                    temparraylist.remove(s);
+                                                                                    if (!temparraylist.isEmpty()) {
+                                                                                        tempstring2 += (ChatColor.BLUE + ", " + ChatColor.AQUA);
+                                                                                    }
                                                                                 }
                                                                             }
-                                                                        }
-                                                                        if (Config.isList("Village Structures." + tempstring + ".Produced Materials")) {
-                                                                            tempstring2 = ChatColor.BLUE + "Produced Materials (Type/Amount): \n" + ChatColor.AQUA;
-                                                                            temparraylist.clear();
-                                                                            temparraylist.addAll(Config.getStringList("Village Structures." + tempstring + ".Produced Materials"));
-                                                                            for (String s : Config.getStringList("Village Structures." + tempstring + ".Produced Materials")) {
-                                                                                String[] req = s.split(":");
-                                                                                tempstring2 += req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
-                                                                                temparraylist.remove(s);
-                                                                                if (!temparraylist.isEmpty()) {
-                                                                                    tempstring2 += (ChatColor.BLUE + ", " + ChatColor.AQUA);
+                                                                            if (Config.isList("Village Structures." + tempstring + ".Produced Materials")) {
+                                                                                tempstring2 = ChatColor.BLUE + "\nProduced Materials (Type/Amount): \n" + ChatColor.AQUA;
+                                                                                temparraylist.clear();
+                                                                                temparraylist.addAll(Config.getStringList("Village Structures." + tempstring + ".Produced Materials"));
+                                                                                for (String s : Config.getStringList("Village Structures." + tempstring + ".Produced Materials")) {
+                                                                                    String[] req = s.split(":");
+                                                                                    tempstring2 += req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                                                                                    temparraylist.remove(s);
+                                                                                    if (!temparraylist.isEmpty()) {
+                                                                                        tempstring2 += (ChatColor.BLUE + ", " + ChatColor.AQUA);
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        } else {
+                                                                            for (String m : Config.getConfigurationSection("Village Structures." + tempstring + ".Productions").getKeys(false)) {
+                                                                                tempstring2 += ChatColor.BLUE + "\nProduction " + ChatColor.AQUA + m + ChatColor.BLUE + ":"
+                                                                                        + ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Income Timer")
+                                                                                        + ChatColor.BLUE + "          Upkeep: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Upkeep")
+                                                                                        + ChatColor.BLUE + "          Revenue: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Revenue");
+                                                                                if (!Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Required Materials").isEmpty()) {
+                                                                                    tempstring = ChatColor.BLUE + "\nRequired Materials (Type/Amount): " + ChatColor.AQUA;
+                                                                                    Config.getStringList("Village Structures." + tempstring + ".Productions." + m + ".Required Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                                                                                        tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                                                                                    });
+                                                                                    tempstring2 += tempstring;
+                                                                                }
+                                                                                if (!Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Produced Materials").isEmpty()) {
+                                                                                    tempstring = ChatColor.BLUE + "\nProduced Materials (Type/Amount): " + ChatColor.AQUA;
+                                                                                    Config.getStringList("Village Structures." + tempstring + ".Productions." + m + ".Produced Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                                                                                        tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                                                                                    });
+                                                                                    tempstring2 += tempstring;
                                                                                 }
                                                                             }
                                                                         }
@@ -1944,7 +2043,7 @@ public class Main extends JavaPlugin {
                                                                             tempstring2 += ChatColor.BLUE + "Upgraded From: " + ChatColor.AQUA + Config.get("Village Ranks." + tempstring + ".Upgraded From");
                                                                         }
                                                                         if (Config.isList("Village Ranks." + tempstring + ".Structure Limits")) {
-                                                                            tempstring2 = ChatColor.BLUE + "Structure Limits (Name/Amount): " + ChatColor.AQUA;
+                                                                            tempstring2 = ChatColor.BLUE + "\nStructure Limits (Name/Amount): " + ChatColor.AQUA;
                                                                             temparraylist.clear();
                                                                             temparraylist.addAll(Config.getStringList("Village Structures." + tempstring + ".Structure Limits"));
                                                                             for (String s : Config.getStringList("Village Structures." + tempstring + ".Structure Limits")) {
@@ -1960,7 +2059,7 @@ public class Main extends JavaPlugin {
                                                                     }
                                                                     sender.sendMessage(tempstring2);
                                                                 } else {
-                                                                    sender.sendMessage(ChatColor.DARK_RED + "The structure named " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " does not exsist");
+                                                                    sender.sendMessage(ChatColor.DARK_RED + "trtructure named " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " does not exsist");
                                                                 }
                                                             } else {
                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are not a manager of this village!");
@@ -1978,16 +2077,36 @@ public class Main extends JavaPlugin {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "str")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
-                                                                        if (!Config.isConfigurationSection("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str"))) {
-                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("str");
-                                                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("con")) {
-                                                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("con");
+                                                                        String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str").toString();
+                                                                        if (!Config.isConfigurationSection("Village Ranks." + structure)) {
+                                                                            Integer x = player.getLocation().getChunk().getX(), z = player.getLocation().getChunk().getZ();
+                                                                            if (MainConversions.isMultiType(structure)) {
+                                                                                tempfile = new File(structureFolder, structure + ".yml");
+                                                                                FileConfiguration tempyaml = new YamlConfiguration();
+                                                                                try {
+                                                                                    tempyaml.load(tempfile);
+                                                                                } catch (IOException | InvalidConfigurationException ex) {
+                                                                                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                                                                }
+                                                                                for (String cx : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                                                                                    for (String cz : tempyaml.getConfigurationSection("Scematic." + cx).getKeys(false)) {
+                                                                                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
+                                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cx) * -1)).get(z + Integer.parseInt(cz) * -1)).remove("str");
+                                                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cz) * -1)).get(z + Integer.parseInt(cx) * -1)).remove("str");
+                                                                                        } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cx))).get(z + Integer.parseInt(cz))).remove("str");
+                                                                                        } else {
+                                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cz))).get(z + Integer.parseInt(cx))).remove("str");
+                                                                                        }
+                                                                                    }
+                                                                                }
                                                                             }
-                                                                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("cle")) {
-                                                                                ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("cle");
-                                                                            }
-                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("hp");
-                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("dir");
+                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).remove("str");
+                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).remove("con");
+                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).remove("cle");
+                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).remove("hp");
+                                                                            ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).remove("dir");
                                                                             sender.sendMessage(ChatColor.BLUE + "You have successfully removed the protection/identity surrounding this structure, it is now breakable");
                                                                         } else {
                                                                             sender.sendMessage(ChatColor.DARK_RED + "You cannot takedown your rank/home structure, the only way to do so would be to create a new village");
@@ -2077,7 +2196,10 @@ public class Main extends JavaPlugin {
                                                                 if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("playerplot")) {
-                                                                            sender.sendMessage(ChatColor.BLUE + "You have took away " + ChatColor.AQUA + Bukkit.getPlayer(UUID.fromString(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("playerplot").toString())) + ChatColor.BLUE + " control over this plot of land");
+                                                                            if (Bukkit.getOfflinePlayer(UUID.fromString(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("playerplot").toString())).isOnline()) {
+                                                                                Bukkit.getPlayer(UUID.fromString(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("playerplot").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + " has just taken away your privlages to the plot of land at X " + ChatColor.AQUA + player.getLocation().getChunk().getX() + ChatColor.BLUE + ", Z " + ChatColor.AQUA + player.getLocation().getChunk().getX());
+                                                                            }
+                                                                            sender.sendMessage(ChatColor.BLUE + "You have took away " + ChatColor.AQUA + Bukkit.getOfflinePlayer(UUID.fromString(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("playerplot").toString())).getName() + ChatColor.BLUE + " control over this plot of land");
                                                                             ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("playerplot");
                                                                         } else {
                                                                             sender.sendMessage(ChatColor.DARK_RED + "No village member currently owns that plot of land");
@@ -2134,7 +2256,7 @@ public class Main extends JavaPlugin {
                                                             if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).containsKey("debt")) {
                                                                     tempstring = "";
-                                                                    for (String p : ((ArrayList<String>) ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).keySet())) {
+                                                                    for (String p : ((HashMap<String, Integer>) serverdata.get("villages").get(playervillage).get("debt")).keySet()) {
                                                                         tempstring += ChatColor.BLUE + Bukkit.getOfflinePlayer(UUID.fromString(p)).getName();
                                                                         if (Integer.parseInt(((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(p).toString()) > 0) {
                                                                             tempstring += ChatColor.AQUA + " +$" + ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(p) + "\n";
@@ -2204,6 +2326,7 @@ public class Main extends JavaPlugin {
                                                     + ChatColor.DARK_GREEN + "/vil manage applications" + ChatColor.GREEN + " Displays a list of players wanting to join the village\n"
                                                     + ChatColor.DARK_GREEN + "/vil manage accept <name>" + ChatColor.GREEN + " Accepts a players request to join the village\n"
                                                     + ChatColor.DARK_GREEN + "/vil manage deny <name>" + ChatColor.GREEN + " Removes a players pending application to join the village\n"
+                                                    + ChatColor.DARK_GREEN + "/vil manage setproduction <production type>" + ChatColor.GREEN + " Changes the production of the structure you are standing in\n"
                                                     + ChatColor.DARK_GREEN + "page <1/3>");
                                         }
                                         break;
@@ -2220,7 +2343,7 @@ public class Main extends JavaPlugin {
                                                             if (serverdata.get("villages").get(playervillage).get("man") != null) {
                                                                 tempint += ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).size();
                                                             }
-                                                            tempstring = ChatColor.BLUE + "                                        " + playervillage + "\nOwner: " + ChatColor.AQUA + Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).getName()
+                                                            tempstring = ChatColor.BLUE + "                                        " + playervillage + "\nOwner: " + ChatColor.AQUA + Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).getName()
                                                                     + ChatColor.BLUE + "\nVillagers: " + ChatColor.AQUA + tempint + ChatColor.BLUE + "/" + ChatColor.AQUA + Config.getString("Village Ranks." + serverdata.get("villages").get(playervillage).get("vir") + ".Max Villagers")
                                                                     + ChatColor.BLUE + "\nPlots Claimed: " + ChatColor.AQUA + serverdata.get("villages").get(playervillage).get("plc") + ChatColor.BLUE + "/" + ChatColor.AQUA + Config.getString("Village Ranks." + serverdata.get("villages").get(playervillage).get("vir") + ".Max Plots")
                                                                     + ChatColor.BLUE + "\nMoney In Vault: " + ChatColor.AQUA + serverdata.get("villages").get(playervillage).get("vau");
@@ -2270,20 +2393,20 @@ public class Main extends JavaPlugin {
                                                                     serverdata.get("villages").get(playervillage).put("vau", ((Integer) serverdata.get("villages").get(playervillage).get("vau")) + Integer.parseInt(args[2]));
                                                                     econ.withdrawPlayer(player, Integer.parseInt(args[2]));
                                                                     if (serverdata.get("villages").get(playervillage).containsKey("debt")) {
-                                                                        if (((HashMap) serverdata.get("villages").get(playervillage).get("debt")).containsKey(player)) {
-                                                                            ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(player, ((Integer) ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(player)) - Integer.parseInt(args[2]));
-                                                                            if (((Integer) ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(player)) == 0) {
-                                                                                ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).remove(player);
+                                                                        if (((HashMap) serverdata.get("villages").get(playervillage).get("debt")).containsKey(playername)) {
+                                                                            ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(playername, ((Integer) ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(playername)) - Integer.parseInt(args[2]));
+                                                                            if (((Integer) ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).get(playername)) == 0) {
+                                                                                ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).remove(playername);
                                                                                 if (((HashMap) serverdata.get("villages").get(playervillage).get("debt")).isEmpty()) {
                                                                                     serverdata.get("villages").get(playervillage).remove("debt");
                                                                                 }
                                                                             }
                                                                         } else {
-                                                                            ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(player, Integer.parseInt(args[2]));
+                                                                            ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(playername, Integer.parseInt(args[2]));
                                                                         }
                                                                     } else {
                                                                         serverdata.get("villages").get(playervillage).put("debt", new HashMap<>());
-                                                                        ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(player, Integer.parseInt(args[2]));
+                                                                        ((HashMap) serverdata.get("villages").get(playervillage).get("debt")).put(playername, Integer.parseInt(args[2]));
                                                                     }
                                                                     temparraylist.clear();
                                                                     if (serverdata.get("villages").get(playervillage).get("mem") != null) {
@@ -2292,13 +2415,13 @@ public class Main extends JavaPlugin {
                                                                     if (serverdata.get("villages").get(playervillage).get("man") != null) {
                                                                         temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(playervillage).get("man"));
                                                                     }
-                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                         if (!Bukkit.getPlayer(UUID.fromString(p)).equals(player)) {
                                                                             Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the village!");
                                                                         }
                                                                     });
-                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).isOnline()) {
-                                                                        if (!Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).toString().equals(player.getUniqueId().toString())) {
+                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).isOnline()) {
+                                                                        if (!Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).toString().equals(playername)) {
                                                                             Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the village!");
                                                                         }
                                                                     }
@@ -2327,7 +2450,7 @@ public class Main extends JavaPlugin {
                                                                 tempHashMap.get("tpz").put(playername, player.getLocation().getBlockZ());
                                                                 sender.sendMessage(ChatColor.BLUE + "You will teleport to your homeblock in " + Config.getInt("Village Settings.Home Teleport Delay") + " seconds, do not move");
                                                                 this.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-                                                                    if (tempHashMap.get("tpx").containsKey(playername)) {
+                                                                    if (tempHashMap.get("tpx").containsKey(playername) && player.isOnline()) {
                                                                         if (Bukkit.getPlayer(UUID.fromString(playername)) != null && ((Integer) tempHashMap.get("tpx").get(playername)) == player.getLocation().getBlockX() && ((Integer) tempHashMap.get("tpy").get(playername)) == player.getLocation().getBlockY() && ((Integer) tempHashMap.get("tpz").get(playername)) == player.getLocation().getBlockZ()) {
                                                                             Location loc = new Location(Bukkit.getWorld(UUID.fromString(serverdata.get("villages").get(playervillage).get("rcw").toString())), (Integer) serverdata.get("villages").get(playervillage).get("rcx"), (Integer) serverdata.get("villages").get(playervillage).get("rcy"), (Integer) serverdata.get("villages").get(playervillage).get("rcz"));
                                                                             player.teleport(loc);
@@ -2570,6 +2693,31 @@ public class Main extends JavaPlugin {
                                                         sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil owner diplomacy relations");
                                                     }
                                                     break;
+                                                case "setproduction":
+                                                    if (args.length > 2) {
+                                                        if (player.hasPermission("empirecraft.village.member.setproduction")) {
+                                                            tempstring = "";
+                                                            for (int i = 2; i < args.length; i++) {
+                                                                tempstring += args[i] + " ";
+                                                            }
+                                                            tempstring = tempstring.trim();
+                                                            if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "pro")) {
+                                                                if (Config.getConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str") + ".Productions").getKeys(false).contains(tempstring)) {
+                                                                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).replace("pro", tempstring);
+                                                                    sender.sendMessage(ChatColor.BLUE + "You have successfully set the structures production to " + ChatColor.AQUA + tempstring);
+                                                                } else {
+                                                                    sender.sendMessage(ChatColor.DARK_RED + "The production type " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " does not exsist for this structure");
+                                                                }
+                                                            } else {
+                                                                sender.sendMessage(ChatColor.DARK_RED + "You must be standing in the chunk of a *Normal* structure type that is fully built/constructed");
+                                                            }
+                                                        } else {
+                                                            sender.sendMessage(ChatColor.DARK_RED + "You lack the permissions to use this command");
+                                                        }
+                                                    } else {
+                                                        sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil manage setproduction <production type>");
+                                                    }
+                                                    break;
                                                 case "1":
                                                     if (args.length == 2) {
                                                         sender.sendMessage(ChatColor.DARK_GREEN + "                                        EMPIRECRAFT\n/vil member info" + ChatColor.GREEN + " Displays info about your village\n"
@@ -2590,6 +2738,7 @@ public class Main extends JavaPlugin {
                                                                 + ChatColor.DARK_GREEN + "/vil member buyplot" + ChatColor.GREEN + " Purchases the plot that you are currently standing in\n"
                                                                 + ChatColor.DARK_GREEN + "/vil member managerlist" + ChatColor.GREEN + " Displays a list of all the managers in the village\n"
                                                                 + ChatColor.DARK_GREEN + "/vil member relations" + ChatColor.GREEN + " View all your current alliances and enemys\n"
+                                                                + ChatColor.DARK_GREEN + "/vil member setproduction <production type>" + ChatColor.GREEN + " Changes the production of the structure you are standing in\n"
                                                                 + ChatColor.DARK_GREEN + "page <2/2>");
                                                     } else if (args.length > 2) {
                                                         sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil member <page>");
@@ -2639,7 +2788,26 @@ public class Main extends JavaPlugin {
 }
 /*
  KEY THINGS NEED TO BE DONE:
- Entry messages such as building completion etc.
+ CHECK FOR ISSUES WITH LADDERS AND BLOCKS THAT REQUIRE A BLOCK BEHIND THEM TO BE PLACED
+
+ Prerequisite buildings before ranking up village or creating an empire, or even other structures themselves!
+ 
+ Structure pre-view of size
+
+ Plot sale sign, player types command, he places sign down, sign lines change, other players click sign to purchase
+
+ Chance of different types of productions, such as %50 means it might produce coal or it might not
+
+ Catapult Structure
+ -Fires Blocks with a spherical radius size, it explodes and damages on impact
+
+ Multi-Sized Structures
+ TESTING
+ STRUCUTRE PROGRESS MESSAGE
+
+ Low Priority
+ -Turn the tab into a display of members, managers, etc of the village!
+ -Income type of item with special properties, such as descriptioin protection effects etc.
 
  Others:
  Admin Commands, and map tooltip setup, such as Holographic display hover system

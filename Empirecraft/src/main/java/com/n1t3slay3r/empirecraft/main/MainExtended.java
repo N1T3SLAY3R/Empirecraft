@@ -71,11 +71,11 @@ public class MainExtended {
                                                                 }
                                                                 return v;
                                                             }).forEach((_item) -> {
-                                                                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + sender.getName() + ChatColor.DARK_PURPLE + ", has just left the throne and has passed it off to " + ChatColor.LIGHT_PURPLE + Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).getName() + ChatColor.DARK_PURPLE + ", owner of the village: " + ChatColor.LIGHT_PURPLE + tempstring);
                                                                 });
                                                             });
-                                                            if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())) != null) {
+                                                            if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
                                                                 Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.BLUE + "You have been successfully given the leadership of your empire from " + ChatColor.AQUA + player.getName() + ChatColor.BLUE + ", the previous leader of the empire");
                                                             }
                                                             sender.sendMessage(ChatColor.BLUE + "You have successfully given " + ChatColor.AQUA + Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).getName() + ChatColor.BLUE + " leadership to the village, and you have been set to a village manager");
@@ -170,7 +170,7 @@ public class MainExtended {
                                                             if (MainConversions.isVillageAlliedOrYoursEmpireWise(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").toString(), playerempire)) {
                                                                 if (serverdata.get("empires").get(playerempire).containsKey("tp")) {
                                                                     tempstring = "";
-                                                                    for (int i = 3; i < args.length; i++) {
+                                                                    for (int i = 2; i < args.length; i++) {
                                                                         tempstring += args[i] + " ";
                                                                     }
                                                                     tempstring = tempstring.trim();
@@ -186,7 +186,7 @@ public class MainExtended {
                                                                     }
                                                                 } else if (Config.getInt("Empire Ranks." + serverdata.get("empires").get(playerempire).get("emr") + ".Number of creatable teleport locations") != 0) {
                                                                     tempstring = "";
-                                                                    for (int i = 3; i < args.length; i++) {
+                                                                    for (int i = 2; i < args.length; i++) {
                                                                         tempstring += args[i] + " ";
                                                                     }
                                                                     tempstring = tempstring.trim();
@@ -222,7 +222,7 @@ public class MainExtended {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         if (serverdata.get("empires").get(playerempire).containsKey("tp")) {
                                                             tempstring = "";
-                                                            for (int i = 3; i < args.length; i++) {
+                                                            for (int i = 2; i < args.length; i++) {
                                                                 tempstring += args[i] + " ";
                                                             }
                                                             tempstring = tempstring.trim();
@@ -250,7 +250,7 @@ public class MainExtended {
                                                 if (player.hasPermission("empirecraft.empire.leader.invitevillage")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         tempstring = "";
-                                                        for (int i = 3; i < args.length; i++) {
+                                                        for (int i = 2; i < args.length; i++) {
                                                             tempstring += args[i] + " ";
                                                         }
                                                         tempstring = tempstring.trim();
@@ -282,7 +282,7 @@ public class MainExtended {
                                                                                     temparraylist.add(serverdata.get("villages").get(v).get("own").toString());
                                                                                     return v;
                                                                                 }).forEach((_item) -> {
-                                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                                         Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + ", has successfully joined the empire ");
                                                                                     });
                                                                                 });
@@ -296,7 +296,7 @@ public class MainExtended {
                                                                                     }
                                                                                 }
                                                                                 temparraylist.add(serverdata.get("villages").get(tempstring).get("own").toString());
-                                                                                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.BLUE + "Your village has been successfully joined into the empire " + ChatColor.AQUA + playerempire);
                                                                                 });
                                                                                 ((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).add(tempstring);
@@ -307,7 +307,7 @@ public class MainExtended {
                                                                         } else {
                                                                             serverdata.get("villages").get(tempstring).put("emi", new ArrayList<>());
                                                                             ((ArrayList) serverdata.get("villages").get(tempstring).get("emi")).add(playerempire);
-                                                                            if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
+                                                                            if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
                                                                                 Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.DARK_PURPLE + "Your village have been invited to join the empire " + ChatColor.LIGHT_PURPLE + playerempire);
                                                                             }
                                                                             sender.sendMessage(ChatColor.BLUE + "You have been successfully invited the village " + ChatColor.AQUA + tempstring + ChatColor.BLUE + " to join the empire");
@@ -318,7 +318,7 @@ public class MainExtended {
                                                                 } else {
                                                                     serverdata.get("villages").get(tempstring).put("emi", new ArrayList<>());
                                                                     ((ArrayList) serverdata.get("villages").get(tempstring).get("emi")).add(playerempire);
-                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())) != null) {
+                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
                                                                         Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.DARK_PURPLE + "Your village have been invited to join the empire " + ChatColor.LIGHT_PURPLE + playerempire);
                                                                     }
                                                                     sender.sendMessage(ChatColor.BLUE + "You have been successfully invited the village " + ChatColor.AQUA + tempstring + ChatColor.BLUE + " to join the empire");
@@ -345,7 +345,7 @@ public class MainExtended {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         if (((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).size() > 2) {
                                                             tempstring = "";
-                                                            for (int i = 3; i < args.length; i++) {
+                                                            for (int i = 2; i < args.length; i++) {
                                                                 tempstring += args[i] + " ";
                                                             }
                                                             tempstring = tempstring.trim();
@@ -371,7 +371,7 @@ public class MainExtended {
                                                                     }
                                                                     return v;
                                                                 }).forEach((_item) -> {
-                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                         Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + ", has successfully joined the empire ");
                                                                     });
                                                                 });
@@ -385,7 +385,7 @@ public class MainExtended {
                                                                     }
                                                                 }
                                                                 temparraylist.add(serverdata.get("villages").get(tempstring).get("own").toString());
-                                                                temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.DARK_RED + "You have been removed from the empire " + ChatColor.RED + playerempire + ChatColor.DARK_RED + " by " + ChatColor.RED + player.getName());
                                                                 });
                                                                 sender.sendMessage(ChatColor.AQUA + tempstring + ChatColor.BLUE + " has been successfully removed from the empire");
@@ -411,8 +411,10 @@ public class MainExtended {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         if (serverdata.get("empires").get(playerempire).get("app") != null) {
                                                             tempstring = ChatColor.BLUE + "";
-                                                            temparraylist.stream().map((s) -> {
-                                                                tempstring += Bukkit.getPlayer(UUID.fromString(s)).getName();
+                                                            temparraylist.clear();
+                                                            temparraylist.addAll((ArrayList) serverdata.get("empires").get(playerempire).get("app"));
+                                                            ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("app")).stream().map((s) -> {
+                                                                tempstring += Bukkit.getOfflinePlayer(UUID.fromString(s)).getName();
                                                                 return s;
                                                             }).map((s) -> {
                                                                 temparraylist.remove(s);
@@ -441,7 +443,7 @@ public class MainExtended {
                                                 if (player.hasPermission("empirecraft.empire.leader.accept")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         tempstring = "";
-                                                        for (int i = 3; i < args.length; i++) {
+                                                        for (int i = 2; i < args.length; i++) {
                                                             tempstring += args[i] + " ";
                                                         }
                                                         tempstring = tempstring.trim();
@@ -472,7 +474,7 @@ public class MainExtended {
                                                                         }
                                                                         return v;
                                                                     }).forEach((_item) -> {
-                                                                        temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                        temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                             Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + ", has successfully joined the empire ");
                                                                         });
                                                                     });
@@ -486,7 +488,7 @@ public class MainExtended {
                                                                         }
                                                                     }
                                                                     temparraylist.add(serverdata.get("villages").get(tempstring).get("own").toString());
-                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                         Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.BLUE + "Your village have been successfully joined into the empire " + ChatColor.AQUA + playerempire);
                                                                     });
                                                                     ((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).add(tempstring);
@@ -515,7 +517,7 @@ public class MainExtended {
                                                 if (player.hasPermission("empirecraft.empire.leader.deny")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         tempstring = "";
-                                                        for (int i = 3; i < args.length; i++) {
+                                                        for (int i = 2; i < args.length; i++) {
                                                             tempstring += args[i] + " ";
                                                         }
                                                         tempstring = tempstring.trim();
@@ -566,7 +568,7 @@ public class MainExtended {
                                                             }
                                                             return v;
                                                         }).forEach((_item) -> {
-                                                            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                 Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", has just abandoned the entire empire, so you are now *free*");
                                                                 if (tempHashMap.get("chc").containsKey(p)) {
                                                                     if (tempHashMap.get("chc").get(p).equals("eal") || tempHashMap.get("chc").get(p).equals("ealy")) {
@@ -624,7 +626,7 @@ public class MainExtended {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         if (serverdata.get("empires").get(playerempire).containsKey("debt")) {
                                                             tempstring = "";
-                                                            for (String v : ((ArrayList<String>) ((HashMap) serverdata.get("empires").get(playerempire).get("debt")).keySet())) {
+                                                            for (String v : ((HashMap<String, Integer>) serverdata.get("empires").get(playerempire).get("debt")).keySet()) {
                                                                 tempstring += ChatColor.BLUE + v;
                                                                 if (Integer.parseInt(((HashMap) serverdata.get("empires").get(playerempire).get("debt")).get(v).toString()) > 0) {
                                                                     tempstring += ChatColor.AQUA + " +$" + ((HashMap) serverdata.get("empires").get(playerempire).get("debt")).get(v) + "\n";
@@ -652,44 +654,48 @@ public class MainExtended {
                                                 if (player.hasPermission("empirecraft.empire.leader.upgraderank")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                         tempstring = "";
-                                                        for (int i = 3; i < args.length; i++) {
+                                                        for (int i = 2; i < args.length; i++) {
                                                             tempstring += args[i] + " ";
                                                         }
                                                         tempstring = tempstring.trim();
                                                         if (Config.contains("Empire Ranks." + tempstring)) {
-                                                            if (Config.getString("Empire Ranks." + tempstring + ".Upgraded From").equals(serverdata.get("empires").get(playerempire).get("emr").toString())) {
-                                                                if (econ.has(player, Config.getInt("Empire Ranks." + tempstring + ".Upgrade Cost"))) {
-                                                                    econ.withdrawPlayer(player, Config.getInt("Empire Ranks." + tempstring + ".Upgrade Cost"));
-                                                                    serverdata.get("empires").get(playerempire).replace("emr", tempstring);
-                                                                    ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("vils")).stream().map((v) -> {
-                                                                        temparraylist.clear();
-                                                                        return v;
-                                                                    }).map((v) -> {
-                                                                        if (serverdata.get("villages").get(v) != null) {
-                                                                            if (serverdata.get("villages").get(v).get("mem") != null) {
-                                                                                temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(v).get("mem"));
+                                                            if (Config.contains("Empire Ranks." + tempstring + ".Upgraded From")) {
+                                                                if (Config.getString("Empire Ranks." + tempstring + ".Upgraded From").equals(serverdata.get("empires").get(playerempire).get("emr").toString())) {
+                                                                    if (econ.has(player, Config.getInt("Empire Ranks." + tempstring + ".Upgrade Cost"))) {
+                                                                        econ.withdrawPlayer(player, Config.getInt("Empire Ranks." + tempstring + ".Upgrade Cost"));
+                                                                        serverdata.get("empires").get(playerempire).replace("emr", tempstring);
+                                                                        ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("vils")).stream().map((v) -> {
+                                                                            temparraylist.clear();
+                                                                            return v;
+                                                                        }).map((v) -> {
+                                                                            if (serverdata.get("villages").get(v) != null) {
+                                                                                if (serverdata.get("villages").get(v).get("mem") != null) {
+                                                                                    temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(v).get("mem"));
+                                                                                }
+                                                                                if (serverdata.get("villages").get(v).get("man") != null) {
+                                                                                    temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(v).get("man"));
+                                                                                }
                                                                             }
-                                                                            if (serverdata.get("villages").get(v).get("man") != null) {
-                                                                                temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(v).get("man"));
+                                                                            return v;
+                                                                        }).map((v) -> {
+                                                                            if (!serverdata.get("villages").get(v).get("own").toString().equals(playerid)) {
+                                                                                temparraylist.add(serverdata.get("villages").get(v).get("own").toString());
                                                                             }
-                                                                        }
-                                                                        return v;
-                                                                    }).map((v) -> {
-                                                                        if (!serverdata.get("villages").get(v).get("own").toString().equals(playerid)) {
-                                                                            temparraylist.add(serverdata.get("villages").get(v).get("own").toString());
-                                                                        }
-                                                                        return v;
-                                                                    }).forEach((_item) -> {
-                                                                        temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
-                                                                            Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + " has just upgraded the empires rank to " + tempstring);
+                                                                            return v;
+                                                                        }).forEach((_item) -> {
+                                                                            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                                Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + " has just upgraded the empires rank to " + tempstring);
+                                                                            });
                                                                         });
-                                                                    });
-                                                                    sender.sendMessage(ChatColor.BLUE + "You have succesfully upgraded the rempires rank to " + ChatColor.AQUA + tempstring + ChatColor.BLUE + " for only $" + ChatColor.AQUA + Config.get("Empire Ranks." + tempstring + ".Upgrade Cost"));
+                                                                        sender.sendMessage(ChatColor.BLUE + "You have succesfully upgraded the rempires rank to " + ChatColor.AQUA + tempstring + ChatColor.BLUE + " for only $" + ChatColor.AQUA + Config.get("Empire Ranks." + tempstring + ".Upgrade Cost"));
+                                                                    } else {
+                                                                        sender.sendMessage(ChatColor.DARK_RED + "The upgrade costs $" + ChatColor.RED + Config.get("Empire Ranks." + tempstring + ".Upgrade Cost") + ChatColor.DARK_RED + ", and you only have $" + ChatColor.RED + econ.getBalance(player));
+                                                                    }
                                                                 } else {
-                                                                    sender.sendMessage(ChatColor.DARK_RED + "The upgrade costs $" + ChatColor.RED + Config.get("Empire Ranks." + tempstring + ".Upgrade Cost") + ChatColor.DARK_RED + ", and you only have $" + ChatColor.RED + econ.getBalance(player));
+                                                                    sender.sendMessage(ChatColor.DARK_RED + "The village rank " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " is only upgraded from " + ChatColor.RED + Config.get("Empire Ranks." + tempstring + ".Upgraded From").equals(serverdata.get("empires").get(playerempire).get("emr").toString()));
                                                                 }
                                                             } else {
-                                                                sender.sendMessage(ChatColor.DARK_RED + "The village rank " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " is only upgraded from " + ChatColor.RED + Config.get("Empire Ranks." + tempstring + ".Upgraded From").equals(serverdata.get("empires").get(playerempire).get("emr").toString()));
+                                                                sender.sendMessage(ChatColor.DARK_RED + "The empire rank " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " is not upgradeable from any empire rank");
                                                             }
                                                         } else {
                                                             sender.sendMessage(ChatColor.DARK_RED + "The empire rank " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " does not exsist in the server database");
@@ -824,8 +830,8 @@ public class MainExtended {
                                                                                             }
                                                                                             ((ArrayList) serverdata.get("empires").get(tempstring).get("trr")).add(playerempire);
                                                                                             sender.sendMessage(ChatColor.BLUE + "You have successfully sent a truce request to " + ChatColor.AQUA + tempstring);
-                                                                                            if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())) != null) {
-                                                                                                Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.AQUA + playerid + ChatColor.BLUE + ", has requested a truce with you, type /emp leader acceptrequest " + ChatColor.AQUA + playerempire + ChatColor.BLUE + " to end this war");
+                                                                                            if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
+                                                                                                Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + ", has requested a truce with you, type /emp leader acceptrequest " + ChatColor.AQUA + playerempire + ChatColor.BLUE + " to end this war");
                                                                                             }
                                                                                         } else {
                                                                                             sender.sendMessage(ChatColor.DARK_RED + "You have already requested a truce with " + ChatColor.RED + tempstring);
@@ -872,8 +878,8 @@ public class MainExtended {
                                                                                                 }
                                                                                                 ((ArrayList) serverdata.get("empires").get(tempstring).get("alr")).add(playerempire);
                                                                                                 sender.sendMessage(ChatColor.BLUE + "You have successfully sent an alliance request to " + ChatColor.AQUA + tempstring);
-                                                                                                if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())) != null) {
-                                                                                                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.AQUA + playerid + ChatColor.BLUE + ", has requested an alliance with you, type /emp leader acceptrequest " + ChatColor.AQUA + playerempire + ChatColor.BLUE + " to form the alliance");
+                                                                                                if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
+                                                                                                    Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.BLUE + ", has requested an alliance with you, type /emp leader acceptrequest " + ChatColor.AQUA + playerempire + ChatColor.BLUE + " to form the alliance");
                                                                                                 }
                                                                                             } else {
                                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You have already requested an alliance with " + ChatColor.RED + tempstring);
@@ -1004,8 +1010,8 @@ public class MainExtended {
                                                                                         serverdata.get("empires").get(playerempire).remove("alr");
                                                                                     }
                                                                                     sender.sendMessage(ChatColor.DARK_PURPLE + "You have successfully denied " + ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + "'s alliance request");
-                                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
-                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + playerid + ChatColor.DARK_PURPLE + ", leader of " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + ", has denied your alliance request");
+                                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
+                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", leader of " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + ", has denied your alliance request");
                                                                                     }
                                                                                 } else if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "trr", tempstring)) {
                                                                                     ((ArrayList) serverdata.get("empires").get(playerempire).get("trr")).remove(tempstring);
@@ -1013,8 +1019,8 @@ public class MainExtended {
                                                                                         serverdata.get("empires").get(playerempire).remove("trr");
                                                                                     }
                                                                                     sender.sendMessage(ChatColor.DARK_PURPLE + "You have successfully denied " + ChatColor.LIGHT_PURPLE + tempstring + ChatColor.DARK_PURPLE + "'s truce request");
-                                                                                    if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
-                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + playerid + ChatColor.DARK_PURPLE + ", leader of " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + ", has denied your truce request");
+                                                                                    if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
+                                                                                        Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", leader of " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + ", has denied your truce request");
                                                                                     }
                                                                                 } else {
                                                                                     sender.sendMessage(ChatColor.RED + tempstring + ChatColor.DARK_RED + " currently has no requests of you");
@@ -1125,6 +1131,7 @@ public class MainExtended {
                                             + ChatColor.DARK_GREEN + "/emp leader removetp <name>" + ChatColor.GREEN + " Removes the selected teleportation point\n"
                                             + ChatColor.DARK_GREEN + "page <1/3>");
                                 }
+                                break;
                             case "follower":
                                 if (args.length > 1) {
                                     switch (args[1]) {
@@ -1165,7 +1172,7 @@ public class MainExtended {
                                                             }
                                                             return v;
                                                         }).forEach((_item) -> {
-                                                            temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                            temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                 if (!p.equals(playerid)) {
                                                                     Bukkit.getPlayer(UUID.fromString(serverdata.get("empires").get(playerempire).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the empire!");
                                                                 }
@@ -1199,9 +1206,9 @@ public class MainExtended {
                                                                 tempHashMap.get("tpz").put(playerid, player.getLocation().getBlockZ());
                                                                 sender.sendMessage(ChatColor.BLUE + "You will teleport to " + tempstring + " in " + Config.getInt("Empire Settings.Teleport Delay") + " seconds, do not move");
                                                                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin("Empirecraft"), () -> {
-                                                                    if (tempHashMap.get("tpx").containsKey(playerid)) {
+                                                                    if (tempHashMap.get("tpx").containsKey(playerid) && player.isOnline()) {
                                                                         if (Bukkit.getPlayer(UUID.fromString(playerid)) != null && ((Integer) tempHashMap.get("tpx").get(playerid)) == player.getLocation().getBlockX() && ((Integer) tempHashMap.get("tpy").get(playerid)) == player.getLocation().getBlockY() && ((Integer) tempHashMap.get("tpz").get(playerid)) == player.getLocation().getBlockZ()) {
-                                                                            Location loc = new Location(Bukkit.getWorld(UUID.fromString(serverdata.get("empires").get(playerempire).get("w").toString())), (Integer) serverdata.get("empires").get(playerempire).get("x"), (Integer) serverdata.get("empires").get(playerempire).get("y"), (Integer) serverdata.get("empires").get(playerempire).get("z"));
+                                                                            Location loc = new Location(Bukkit.getWorld(UUID.fromString(((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("w").toString())), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("x"), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("y"), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("z"));
                                                                             player.teleport(loc);
                                                                             tempHashMap.get("tpx").remove(playerid);
                                                                             tempHashMap.get("tpy").remove(playerid);
@@ -1210,7 +1217,7 @@ public class MainExtended {
                                                                     }
                                                                 }, Config.getLong("Village Settings.Home Teleport Delay") * 20);
                                                             } else {
-                                                                Location loc = new Location(Bukkit.getWorld(serverdata.get("empires").get(playerempire).get("w").toString()), (Integer) serverdata.get("empires").get(playerempire).get("x"), (Integer) serverdata.get("empires").get(playerempire).get("y"), (Integer) serverdata.get("empires").get(playerempire).get("z"));
+                                                                Location loc = new Location(Bukkit.getWorld(UUID.fromString(((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("w").toString())), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("x"), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("y"), (Integer) ((HashMap) ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).get(tempstring)).get("z"));
                                                                 player.teleport(loc);
                                                                 sender.sendMessage(ChatColor.BLUE + "Teleporting now");
                                                             }
@@ -1230,14 +1237,14 @@ public class MainExtended {
                                             }
                                             break;
                                         case "tplist":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.tplist")) {
                                                     if (serverdata.get("empires").get(playerempire).containsKey("tp")) {
                                                         tempstring = ChatColor.BLUE + "Teleportation Locatations\n" + ChatColor.AQUA + "";
                                                         temparraylist.clear();
-                                                        temparraylist.addAll((ArrayList) serverdata.get("empires").get(playerempire).get("mem"));
-                                                        ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("mem")).stream().map((s) -> {
-                                                            tempstring += Bukkit.getServer().getOfflinePlayer(UUID.fromString(s)).getName();
+                                                        temparraylist.addAll(((HashMap<String, String>) serverdata.get("empires").get(playerempire).get("tp")).keySet());
+                                                        ((HashMap<String, String>) serverdata.get("empires").get(playerempire).get("tp")).keySet().stream().map((s) -> {
+                                                            tempstring += s;
                                                             return s;
                                                         }).map((s) -> {
                                                             temparraylist.remove(s);
@@ -1245,7 +1252,7 @@ public class MainExtended {
                                                         }).filter((_item) -> (!temparraylist.isEmpty())).forEach((_item) -> {
                                                             tempstring += (ChatColor.BLUE + ", " + ChatColor.AQUA);
                                                         });
-                                                        tempstring += ChatColor.BLUE + "\nTotal Members: " + ChatColor.AQUA + ((ArrayList) serverdata.get("villages").get(playerempire).get("mem")).size();
+                                                        tempstring += ChatColor.BLUE + "\nTotal Teleportation Locations: " + ChatColor.AQUA + ((HashMap) serverdata.get("empires").get(playerempire).get("tp")).keySet().size();
                                                         sender.sendMessage(tempstring);
                                                     } else {
                                                         sender.sendMessage(ChatColor.DARK_RED + "There are currently no teleportation points within the empire");
@@ -1258,7 +1265,7 @@ public class MainExtended {
                                             }
                                             break;
                                         case "leave":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.leave")) {
                                                     String playervillage = serverdata.get("playerdata").get(playerid).get("village").toString();
                                                     if (serverdata.get("empires").get(playerempire).get("mav") != playervillage) {
@@ -1289,7 +1296,7 @@ public class MainExtended {
                                                                     temparraylist.add(serverdata.get("villages").get(v).get("own").toString());
                                                                     return v;
                                                                 }).forEach((_item) -> {
-                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                         Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + " has left the empire");
                                                                     });
                                                                 });
@@ -1302,7 +1309,7 @@ public class MainExtended {
                                                                         temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(playervillage).get("man"));
                                                                     }
                                                                 }
-                                                                temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+                                                                temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                                                                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + " has issued to command for the village to leave the empire " + ChatColor.LIGHT_PURPLE + playerempire);
                                                                     if (tempHashMap.get("chc").containsKey(p)) {
                                                                         if (tempHashMap.get("chc").get(p).equals("eal") || tempHashMap.get("chc").get(p).equals("ealy")) {
@@ -1331,7 +1338,7 @@ public class MainExtended {
                                                                     }
                                                                     return v;
                                                                 }).forEach((_item) -> {
-                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getPlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
+                                                                    temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                         Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.DARK_PURPLE + "Your empire " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + " has been removed since " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.LIGHT_PURPLE + " left and your village is the last one left in it, so it has been eleminated/removed");
                                                                         if (tempHashMap.get("chc").containsKey(p)) {
                                                                             if (tempHashMap.get("chc").get(p).equals("eal") || tempHashMap.get("chc").get(p).equals("ealy")) {
@@ -1388,9 +1395,9 @@ public class MainExtended {
                                             }
                                             break;
                                         case "info":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.info")) {
-                                                    tempstring = ChatColor.BLUE + "                                        " + playerempire + "\nLeader: " + ChatColor.AQUA + Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(playerempire).get("mav").toString()).get("own").toString())).getName()
+                                                    tempstring = ChatColor.BLUE + "                                        " + playerempire + "\nLeader: " + ChatColor.AQUA + Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(playerempire).get("mav").toString()).get("own").toString())).getName()
                                                             + ChatColor.BLUE + "\nLeaders/Main Village: " + ChatColor.AQUA + serverdata.get("empires").get(playerempire).get("mav")
                                                             + ChatColor.BLUE + "\nVillages: " + ChatColor.AQUA + ((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).size() + ChatColor.BLUE + "/" + ChatColor.AQUA + Config.getString("Empire Ranks." + serverdata.get("empires").get(playerempire).get("emr") + ".Maximum villages allowed in empire")
                                                             + ChatColor.BLUE + "\nMoney In Vault: " + ChatColor.AQUA + serverdata.get("empires").get(playerempire).get("vau");
@@ -1406,7 +1413,7 @@ public class MainExtended {
                                             }
                                             break;
                                         case "relations":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.relations")) {
                                                     sender.sendMessage(ChatColor.BLUE + "Allies");
                                                     if (serverdata.get("empires").get(playerempire).get("all") != null) {
@@ -1454,21 +1461,21 @@ public class MainExtended {
                                             }
                                             break;
                                         case "vessels":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.vessels")) {
                                                     tempstring = ChatColor.BLUE + "Villages within" + playerempire + ChatColor.AQUA + "\n";
                                                     temparraylist.clear();
                                                     temparraylist.addAll((ArrayList) serverdata.get("empires").get(playerempire).get("vils"));
-                                                    ((ArrayList) serverdata.get("villages").get(playerempire).get("vils")).stream().map((s) -> {
+                                                    ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("vils")).stream().map((s) -> {
                                                         tempstring += s;
                                                         return s;
                                                     }).map((s) -> {
-                                                        temparraylist.remove((String) s);
+                                                        temparraylist.remove(s);
                                                         return s;
                                                     }).filter((_item) -> (!temparraylist.isEmpty())).forEach((_item) -> {
                                                         tempstring += (ChatColor.BLUE + ", " + ChatColor.AQUA);
                                                     });
-                                                    tempstring += ChatColor.BLUE + "\nTotal Villages: " + ChatColor.AQUA + ((ArrayList) serverdata.get("villages").get(playerempire).get("vils")).size();
+                                                    tempstring += ChatColor.BLUE + "\nTotal Villages: " + ChatColor.AQUA + ((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).size();
                                                     sender.sendMessage(tempstring);
                                                 } else {
                                                     sender.sendMessage(ChatColor.DARK_RED + "You lack the permissions to use this command");
@@ -1478,7 +1485,7 @@ public class MainExtended {
                                             }
                                             break;
                                         case "tax":
-                                            if (args.length == 3) {
+                                            if (args.length == 2) {
                                                 if (player.hasPermission("empirecraft.empire.follower.tax")) {
                                                     tempstring = ChatColor.BLUE + "Server time: " + ChatColor.AQUA;
                                                     Calendar cal = Calendar.getInstance();

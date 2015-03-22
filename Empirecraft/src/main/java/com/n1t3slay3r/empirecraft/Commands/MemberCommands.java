@@ -25,9 +25,9 @@ import org.bukkit.entity.Player;
 public class MemberCommands {
 
     public static void Leave(String playervillage, String playername, Player player, String position) {
-        ((ArrayList) serverdata.get("villages").get(playervillage).get("position")).remove(playername);
-        if (((ArrayList) serverdata.get("villages").get(playervillage).get("position")).isEmpty()) {
-            serverdata.get("villages").get(playervillage).remove("position");
+        ((ArrayList) serverdata.get("villages").get(playervillage).get(position)).remove(playername);
+        if (((ArrayList) serverdata.get("villages").get(playervillage).get(position)).isEmpty()) {
+            serverdata.get("villages").get(playervillage).remove(position);
         }
         player.sendMessage(ChatColor.BLUE + "You have successfully left the village " + ChatColor.AQUA + playervillage);
         if (tempHashMap.get("chc").containsKey(playername)) {
@@ -36,8 +36,8 @@ public class MemberCommands {
             }
         }
         serverdata.get("playerdata").remove(playername);
-        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())) != null) {
-            Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).sendMessage(ChatColor.AQUA + playername + ChatColor.DARK_PURPLE + " has left the village");
+        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).isOnline()) {
+            Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(playervillage).get("own").toString())).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.DARK_PURPLE + " has left the village");
         }
         temparraylist.clear();
         if (serverdata.get("villages").get(playervillage) != null) {
@@ -48,7 +48,7 @@ public class MemberCommands {
                 temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(playervillage).get("man"));
             }
         }
-        temparraylist.stream().filter((p) -> (Bukkit.getPlayer(p).isOnline())).forEach((p) -> {
+        temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(p).isOnline())).forEach((p) -> {
             Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.AQUA + player.getName() + ChatColor.DARK_PURPLE + " has left the village");
         });
     }
@@ -106,11 +106,11 @@ public class MemberCommands {
                         if (serverdata.get("playerdata").get(playername).containsKey("modify")) {
                             switch (args[4]) {
                                 case "on":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("modify")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "on");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("modify")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "on");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can now place and destroy blocks in your plot(s)");
                                     break;
                                 case "off":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("modify")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "off");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("modify")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "off");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can no longer place and destroy blocks in your plot(s)");
                                     break;
                                 default:
@@ -118,7 +118,7 @@ public class MemberCommands {
                                     break;
                             }
                         } else {
-                            if (Bukkit.getPlayer(args[3]) != null) {
+                            if (Bukkit.getOfflinePlayer(args[3]).isOnline()) {
                                 switch (args[4]) {
                                     case "on":
                                         serverdata.get("playerdata").get(playername).put("modify", new HashMap<>());
@@ -192,11 +192,11 @@ public class MemberCommands {
                         if (serverdata.get("playerdata").get(playername).containsKey("doors")) {
                             switch (args[4]) {
                                 case "on":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("doors")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "on");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("doors")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "on");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can now open and close doors in your plot(s)");
                                     break;
                                 case "off":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("doors")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "off");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("doors")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "off");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can no longer open and close doors in your plot(s)");
                                     break;
                                 default:
@@ -204,7 +204,7 @@ public class MemberCommands {
                                     break;
                             }
                         } else {
-                            if (Bukkit.getPlayer(args[3]) != null) {
+                            if (Bukkit.getOfflinePlayer(args[3]).isOnline()) {
                                 switch (args[4]) {
                                     case "on":
                                         serverdata.get("playerdata").get(playername).put("doors", new HashMap<>());
@@ -278,11 +278,11 @@ public class MemberCommands {
                         if (serverdata.get("playerdata").get(playername).containsKey("buttons")) {
                             switch (args[4]) {
                                 case "on":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("buttons")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "on");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("buttons")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "on");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can now push buttons in your plot(s)");
                                     break;
                                 case "off":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("buttons")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "off");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("buttons")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "off");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can no longer push buttons in your plot(s)");
                                     break;
                                 default:
@@ -290,7 +290,7 @@ public class MemberCommands {
                                     break;
                             }
                         } else {
-                            if (Bukkit.getPlayer(args[3]) != null) {
+                            if (Bukkit.getOfflinePlayer(args[3]).isOnline()) {
                                 switch (args[4]) {
                                     case "on":
                                         serverdata.get("playerdata").get(playername).put("buttons", new HashMap<>());
@@ -364,11 +364,11 @@ public class MemberCommands {
                         if (serverdata.get("playerdata").get(playername).containsKey("levers")) {
                             switch (args[4]) {
                                 case "on":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("levers")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "on");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("levers")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "on");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can now use levers in your plot(s)");
                                     break;
                                 case "off":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("levers")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "off");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("levers")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "off");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " no longer use levers in your plot(s)");
                                     break;
                                 default:
@@ -376,7 +376,7 @@ public class MemberCommands {
                                     break;
                             }
                         } else {
-                            if (Bukkit.getPlayer(args[3]) != null) {
+                            if (Bukkit.getOfflinePlayer(args[3]).isOnline()) {
                                 switch (args[4]) {
                                     case "on":
                                         serverdata.get("playerdata").get(playername).put("levers", new HashMap<>());
@@ -450,11 +450,11 @@ public class MemberCommands {
                         if (serverdata.get("playerdata").get(playername).containsKey("containers")) {
                             switch (args[4]) {
                                 case "on":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("containers")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "on");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("containers")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "on");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " can now open chests in your plot(s)");
                                     break;
                                 case "off":
-                                    ((HashMap) serverdata.get("playerdata").get(playername).get("containers")).put(Bukkit.getPlayer(args[3]).getUniqueId().toString(), "off");
+                                    ((HashMap) serverdata.get("playerdata").get(playername).get("containers")).put(Bukkit.getOfflinePlayer(args[3]).getUniqueId().toString(), "off");
                                     sender.sendMessage(ChatColor.AQUA + args[3] + ChatColor.BLUE + " no can no longer open chests in your plot(s)");
                                     break;
                                 default:
@@ -462,7 +462,7 @@ public class MemberCommands {
                                     break;
                             }
                         } else {
-                            if (Bukkit.getPlayer(args[3]) != null) {
+                            if (Bukkit.getOfflinePlayer(args[3]).isOnline()) {
                                 switch (args[4]) {
                                     case "on":
                                         serverdata.get("playerdata").get(playername).put("containers", new HashMap<>());

@@ -44,47 +44,41 @@
         </repository>
         <repository>
             <id>spigot-repo</id>
-            <url>http://repo.md-5.net/content/groups/public/</url>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>worldedit-repo</id>
-            <url>http://maven.sk89q.com/repo/com/sk89q/worldedit/5.9-SNAPSHOT/</url>
+            <url>http://maven.sk89q.com/repo/com/sk89q/worldedit/6.0.0-SNAPSHOT/</url>
         </repository>
         <repository>
             <id>worldguard-repo</id>
-            <url>http://mc-repo.alexbond.info/artifactory/repo/com/sk89q/worldguard/5.9-SNAPSHOT/</url>
+            <url>http://mc-repo.alexbond.info/artifactory/repo/com/sk89q/worldguard/6.0.0-SNAPSHOT/</url>
         </repository>
     </repositories>
     <dependencies>
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.7.10-R0.1-SNAPSHOT</version>
+            <version>1.8-R0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>5.9</version>
+            <version>6.0.0</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>
-            <version>5.9</version>
+            <version>6.0.0</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>

@@ -18,11 +18,20 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
+import static org.bukkit.Material.LOG;
+import static org.bukkit.Material.SANDSTONE;
+import static org.bukkit.Material.STEP;
+import static org.bukkit.Material.WOOD;
+import static org.bukkit.Material.WOOD_STEP;
+import static org.bukkit.Material.WOOL;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -30,6 +39,11 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.material.Sandstone;
+import org.bukkit.material.Step;
+import org.bukkit.material.Tree;
+import org.bukkit.material.WoodenStep;
+import org.bukkit.material.Wool;
 
 /**
  *
@@ -58,6 +72,91 @@ public class MainConversions extends Main {
         return false;
     }
 
+    public static boolean isMultiType(String structure) {
+        if (Config.isConfigurationSection("Village Structures." + structure)) {
+            if (Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isMulti(Chunk c, String structure, FileConfiguration file, String dir, String pvil) {
+        if (Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+            for (String x : file.getConfigurationSection("Scematic").getKeys(false)) {
+                for (String z : file.getConfigurationSection("Scematic." + x).getKeys(false)) {
+                    if (dir.equalsIgnoreCase("n")) {
+                        if (isWorldChunkClaimed(serverdata.get("worldmap").get(c.getWorld().getUID().toString()), Integer.parseInt(x) * -1 + c.getX(), Integer.parseInt(z) * -1 + c.getZ(), "cla")) {
+                            if ((!((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).get("cla").equals(pvil) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).containsKey("playerplot")) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).containsKey("str")) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    } else if (dir.equalsIgnoreCase("e")) {
+                        if (isWorldChunkClaimed(serverdata.get("worldmap").get(c.getWorld().getUID().toString()), Integer.parseInt(z) * -1 + c.getX(), Integer.parseInt(x) * -1 + c.getZ(), "cla")) {
+                            if ((!((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).get("cla").equals(pvil) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).containsKey("playerplot")) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).containsKey("str")) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    } else if (dir.equalsIgnoreCase("s")) {
+                        if (isWorldChunkClaimed(serverdata.get("worldmap").get(c.getWorld().getUID().toString()), Integer.parseInt(x) + c.getX(), Integer.parseInt(z) + c.getZ(), "cla")) {
+                            if ((!((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).get("cla").equals(pvil) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).containsKey("playerplot")) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).containsKey("str")) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        if (isWorldChunkClaimed(serverdata.get("worldmap").get(c.getWorld().getUID().toString()), Integer.parseInt(z) + c.getX(), Integer.parseInt(x) + c.getZ(), "cla")) {
+                            if ((!((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).get("cla").equals(pvil) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).containsKey("playerplot")) || ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).containsKey("str")) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            }
+            if (dir.equalsIgnoreCase("n")) {
+                for (String x : file.getConfigurationSection("Scematic").getKeys(false)) {
+                    for (String z : file.getConfigurationSection("Scematic." + x).getKeys(false)) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).put("str", structure);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).put("mx", Integer.parseInt(x) * -1);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) * -1 + c.getX())).get(Integer.parseInt(z) * -1 + c.getZ())).put("mz", Integer.parseInt(z) * -1);
+                    }
+                }
+            } else if (dir.equalsIgnoreCase("e")) {
+                for (String x : file.getConfigurationSection("Scematic").getKeys(false)) {
+                    for (String z : file.getConfigurationSection("Scematic." + x).getKeys(false)) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).put("str", structure);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).put("mx", Integer.parseInt(x) * -1);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) * -1 + c.getX())).get(Integer.parseInt(x) * -1 + c.getZ())).put("mz", Integer.parseInt(z) * -1);
+                    }
+                }
+            } else if (dir.equalsIgnoreCase("s")) {
+                for (String x : file.getConfigurationSection("Scematic").getKeys(false)) {
+                    for (String z : file.getConfigurationSection("Scematic." + x).getKeys(false)) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).put("str", structure);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).put("mx", Integer.parseInt(x) * -1);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(x) + c.getX())).get(Integer.parseInt(z) + c.getZ())).put("mz", Integer.parseInt(z) * -1);
+                    }
+                }
+            } else {
+                for (String x : file.getConfigurationSection("Scematic").getKeys(false)) {
+                    for (String z : file.getConfigurationSection("Scematic." + x).getKeys(false)) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).put("str", structure);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).put("mx", Integer.parseInt(x) * -1);
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(c.getWorld().getUID().toString()).get(Integer.parseInt(z) + c.getX())).get(Integer.parseInt(x) + c.getZ())).put("mz", Integer.parseInt(z) * -1);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     public static boolean enemyEmpire(String pvillage, String evillage) {
         if (serverdata.get("villages").get(pvillage).containsKey("emp") && serverdata.get("villages").get(evillage).containsKey("emp")) {
             if (serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).containsKey("ene")) {
@@ -69,12 +168,52 @@ public class MainConversions extends Main {
         return false;
     }
 
-    public static boolean listenerBlockBreak(String world, Integer x, Integer z, Player player, Material mat, String evillage, String playeruuid) {
+    public static boolean listenerBlockBreak(String world, Integer x, Integer z, Player player, Material mat, String evillage, String playeruuid, Block block) {
         if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+            String nmat;
+            if (mat == WOOL) {
+                nmat = mat.toString() + "_" + ((Wool) block.getState().getData()).getColor().toString();
+            } else if (mat == SANDSTONE) {
+                nmat = mat.toString() + "_" + ((Sandstone) block.getState().getData()).getType().toString();
+            } else if (mat == WOOD || mat == LOG) {
+                nmat = mat.toString() + "_" + ((Tree) block.getState().getData()).getSpecies().toString();
+            } else if (mat == STEP) {
+                nmat = mat.toString() + "_" + ((Step) block.getState().getData()).getMaterial().toString();
+            } else if (mat == WOOD_STEP) {
+                nmat = mat.toString() + "_" + ((WoodenStep) block.getState().getData()).getSpecies().toString();
+            } else {
+                nmat = mat.toString();
+            }
             if (Config.isConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str"))) {
-                if (Config.isInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + mat.toString())) {
-                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) - Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + mat.toString()));
+                if (Config.isInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + nmat)) {
+                    if (isMultiType(((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str").toString())) {
+                        x = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("mx"));
+                        z = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("mz"));
+                    }
+                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) - Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + nmat));
                     if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) < 1) {
+                        if (isMultiType(((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str").toString())) {
+                            tempfile = new File(structureFolder, ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".yml");
+                            FileConfiguration tempyaml = new YamlConfiguration();
+                            try {
+                                tempyaml.load(tempfile);
+                            } catch (IOException | InvalidConfigurationException ex) {
+                                Logger.getLogger(MainConversions.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            for (String cx : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                                for (String cz : tempyaml.getConfigurationSection("Scematic." + cx).getKeys(false)) {
+                                    if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
+                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cx) * -1)).get(z + Integer.parseInt(cz) * -1)).remove("str");
+                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
+                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cz) * -1)).get(z + Integer.parseInt(cx) * -1)).remove("str");
+                                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
+                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cx))).get(z + Integer.parseInt(cz))).remove("str");
+                                    } else {
+                                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(x + Integer.parseInt(cz))).get(z + Integer.parseInt(cx))).remove("str");
+                                    }
+                                }
+                            }
+                        }
                         ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).remove("str");
                         ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).remove("hp");
                         ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).remove("dir");
@@ -100,7 +239,8 @@ public class MainConversions extends Main {
                         fw = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
                         fwm.setPower(4);
                         fw.setFireworkMeta(fwm);
-                    } else {
+                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("fir")) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).put("fir", true);
                         Firework fw = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
                         FireworkMeta fwm = fw.getFireworkMeta();
                         FireworkEffect.Type type = FireworkEffect.Type.BURST;
@@ -112,8 +252,8 @@ public class MainConversions extends Main {
                     }
                 }
             } else {
-                if (Config.isInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + mat.toString())) {
-                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) - Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + mat.toString()));
+                if (Config.isInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + nmat)) {
+                    ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) - Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("str") + ".Block Hp." + nmat));
                     if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("hp")) < 1) {
                         Firework fw = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
                         FireworkMeta fwm = fw.getFireworkMeta();
@@ -131,7 +271,8 @@ public class MainConversions extends Main {
                         fwm.setPower(4);
                         fw.setFireworkMeta(fwm);
                         OwnerCommands.Defeated(evillage, playeruuid);
-                    } else {
+                    } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("fir")) {
+                        ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).put("fir", true);
                         Firework fw = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
                         FireworkMeta fwm = fw.getFireworkMeta();
                         FireworkEffect.Type type = FireworkEffect.Type.BURST;
@@ -143,7 +284,7 @@ public class MainConversions extends Main {
                     }
                 }
             }
-            if (!Config.getStringList("Village Settings.Placeable/Destroyble Blocks In Structures").contains(mat.toString())) {
+            if (!Config.getStringList("Village Settings.Placeable/Destroyble Blocks In Structures").contains(nmat)) {
                 return true;
             }
         }
@@ -158,16 +299,10 @@ public class MainConversions extends Main {
         bm.setDisplayName(ChatColor.AQUA + structure);
         ArrayList<String> pages = new ArrayList<>();
         if (Config.isConfigurationSection("Village Structures." + structure)) {
-            if (!Config.getString("Village Structures." + structure + ".Type").equals("Archer")) {
-                tempstring = ChatColor.BLUE + "Type: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Type")
-                        + ChatColor.BLUE + "\nCreation Cost: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Creation Cost")
-                        + ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Income Timer")
-                        + ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Upkeep")
-                        + ChatColor.BLUE + "\nRevenue: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Revenue");
-            } else {
-                tempstring = ChatColor.BLUE + "Type: " + ChatColor.AQUA + "Archer"
-                        + ChatColor.BLUE + "\nCreation Cost: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Creation Cost")
-                        + ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Upkeep")
+            tempstring = ChatColor.BLUE + "Type: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Type")
+                    + ChatColor.BLUE + "\nCreation Cost: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Creation Cost");
+            if (Config.getString("Village Structures." + structure + ".Type").equals("Archer")) {
+                tempstring += ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Upkeep")
                         + ChatColor.BLUE + "\nArrow Properties (Type Value): " + ChatColor.AQUA
                         + ChatColor.BLUE + "\nBounce: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Bounce")
                         + ChatColor.BLUE + "\nCritical: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Critical")
@@ -177,25 +312,63 @@ public class MainConversions extends Main {
                         + ChatColor.BLUE + "\nArrow Spread: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Arrow Spread")
                         + ChatColor.BLUE + "\nArrows Fired: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Arrows Fired")
                         + ChatColor.BLUE + "\nRange (Chunks): " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Range");
+            } else if (!Config.getString("Village Structures." + structure + ".Type").equals("Normal") && !Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+                tempstring += ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Income Timer")
+                        + ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Upkeep")
+                        + ChatColor.BLUE + "\nRevenue: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Revenue");
             }
             if (Config.isConfigurationSection("Village Structures." + structure + ".Upgraded From")) {
                 tempstring += ChatColor.BLUE + "\nUpgraded From: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Upgraded From");
             }
             tempstring += ChatColor.BLUE + "\nTotal Hp: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Total Hp");
             pages.add(tempstring);
-            if (Config.isList("Village Structures." + structure + ".Required Materials")) {
-                tempstring = ChatColor.BLUE + "Required Materials (Type/Amount): " + ChatColor.AQUA;
-                Config.getStringList("Village Structures." + structure + ".Required Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
-                    tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
-                });
-                pages.add(tempstring);
-            }
-            if (Config.isList("Village Structures." + structure + ".Produced Materials")) {
-                tempstring = ChatColor.BLUE + "Produced Materials (Type/Amount): " + ChatColor.AQUA;
-                Config.getStringList("Village Structures." + structure + ".Produced Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
-                    tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
-                });
-                pages.add(tempstring);
+            if (!Config.getString("Village Structures." + structure + ".Type").equals("Normal") && !Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+                if (Config.isList("Village Structures." + structure + ".Required Materials")) {
+                    tempstring = ChatColor.BLUE + "Required Materials (Type/Amount): " + ChatColor.AQUA;
+                    Config.getStringList("Village Structures." + structure + ".Required Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                        tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                    });
+                    pages.add(tempstring);
+                }
+                if (Config.isList("Village Structures." + structure + ".Produced Materials")) {
+                    tempstring = ChatColor.BLUE + "Produced Materials (Type/Amount): " + ChatColor.AQUA;
+                    Config.getStringList("Village Structures." + structure + ".Produced Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                        tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                    });
+                    pages.add(tempstring);
+                }
+            } else {
+                for (String m : Config.getConfigurationSection("Village Structures." + structure + ".Productions").getKeys(false)) {
+                    tempstring = ChatColor.BLUE + "Production " + ChatColor.AQUA + m + ChatColor.BLUE + ":"
+                            + ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Productions." + m + ".Income Timer")
+                            + ChatColor.BLUE + "\nUpkeep: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Productions." + m + ".Upkeep")
+                            + ChatColor.BLUE + "\nRevenue: " + ChatColor.AQUA + Config.get("Village Structures." + structure + ".Productions." + m + ".Revenue");
+                    if (Config.isList("Village Structures." + structure + ".Productions." + m + ".Animals")) {
+                        tempstring += ChatColor.BLUE + "\nAnimals Spawned: " + ChatColor.AQUA;
+                        Config.getStringList("Village Structures." + structure + ".Productions." + m + ".Animals").stream().map((s) -> s.split(":")).forEach((req) -> {
+                            tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                        });
+                        pages.add(tempstring);
+                    }
+                    if (!Config.getList("Village Structures." + structure + ".Productions." + m + ".Required Materials").isEmpty() || !Config.getList("Village Structures." + structure + ".Productions." + m + ".Produced Materials").isEmpty()) {
+                        if (!Config.getList("Village Structures." + structure + ".Productions." + m + ".Required Materials").isEmpty()) {
+                            tempstring += ChatColor.BLUE + "\nRequired Materials: " + ChatColor.AQUA;
+                            Config.getStringList("Village Structures." + structure + ".Productions." + m + ".Required Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                                tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                            });
+                            pages.add(tempstring);
+                        }
+                        if (!Config.getList("Village Structures." + structure + ".Productions." + m + ".Produced Materials").isEmpty()) {
+                            tempstring += ChatColor.BLUE + "\nProduced Materials: " + ChatColor.AQUA;
+                            Config.getStringList("Village Structures." + structure + ".Productions." + m + ".Produced Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
+                                tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
+                            });
+                            pages.add(tempstring);
+                        }
+                    } else {
+                        pages.add(tempstring);
+                    }
+                }
             }
         } else {
             tempstring = ChatColor.BLUE + "Max Plots: " + ChatColor.AQUA + Config.get("Village Ranks." + structure + ".Max Plots")
@@ -216,10 +389,10 @@ public class MainConversions extends Main {
             }
         }
         tempHashMap.put("temp", new HashMap<>());
-        for (int y = 1; y <= tempyaml.getConfigurationSection("Scematic").getKeys(false).size(); y++) {
-            for (int x = 1; x < 17; x++) {
-                for (int z = 1; z < 17; z++) {
-                    if (!tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("AIR")) {
+        if (!isMultiType(structure)) {
+            for (String y : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                for (String x : tempyaml.getConfigurationSection("Scematic." + y).getKeys(false)) {
+                    for (String z : tempyaml.getConfigurationSection("Scematic." + y + "." + x).getKeys(false)) {
                         if (tempHashMap.get("temp").containsKey(tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id"))) {
                             tempHashMap.get("temp").put(tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id"), ((Integer) tempHashMap.get("temp").get(tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id"))) + 1);
                         } else if (tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("WOOL") || tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("SANDSTONE") || tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("WOOD") || tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("LOG") || tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("WOOD_STEP") || tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id").equals("STEP")) {
@@ -230,6 +403,28 @@ public class MainConversions extends Main {
                             }
                         } else {
                             tempHashMap.get("temp").put(tempyaml.getString("Scematic." + y + "." + x + "." + z + ".id"), 1);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (String cx : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
+                for (String cz : tempyaml.getConfigurationSection("Scematic." + cx).getKeys(false)) {
+                    for (String y : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz).getKeys(false)) {
+                        for (String x : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + y).getKeys(false)) {
+                            for (String z : tempyaml.getConfigurationSection("Scematic." + cx + "." + cz + "." + y + "." + x).getKeys(false)) {
+                                if (tempHashMap.get("temp").containsKey(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id"))) {
+                                    tempHashMap.get("temp").put(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id"), ((Integer) tempHashMap.get("temp").get(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id"))) + 1);
+                                } else if (tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("WOOL") || tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("SANDSTONE") || tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("WOOD") || tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("LOG") || tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("WOOD_STEP") || tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id").equals("STEP")) {
+                                    if (tempHashMap.get("temp").containsKey(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id") + "_" + tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".typ"))) {
+                                        tempHashMap.get("temp").put(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id") + "_" + tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".typ"), ((Integer) tempHashMap.get("temp").get(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id") + "_" + tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".typ"))) + 1);
+                                    } else {
+                                        tempHashMap.get("temp").put(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id") + "_" + tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".typ"), 1);
+                                    }
+                                } else {
+                                    tempHashMap.get("temp").put(tempyaml.getString("Scematic." + cx + "." + cz + "." + y + "." + x + "." + z + ".id"), 1);
+                                }
+                            }
                         }
                     }
                 }
@@ -288,6 +483,17 @@ public class MainConversions extends Main {
             }
         }
         return true;
+    }
+
+    public static boolean structureIncomeCheck(Long time, String structure, String w, Object x, Object z) {
+        if (!Config.getString("Village Structures." + structure + ".Type").equals("Normal")&&!Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
+            if (time % ((Integer) tempHashMap.get("incometimer").get(structure)) == 0) {
+                return true;
+            }
+        } else if (time % Config.getInt("Village Structures." + structure + ".Productions." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("pro") + ".Income Timer") == 0) {
+            return true;
+        }
+        return false;
     }
 
     public static boolean isPlayerInArrayList(HashMap<String, ArrayList> hashmap, String part, String playername) {

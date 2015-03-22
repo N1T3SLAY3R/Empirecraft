@@ -25,7 +25,7 @@ import org.bukkit.entity.Player;
  */
 @SuppressWarnings("unchecked")
 public class MainCommands {
-    
+
     public static void Create(CommandSender sender, Player player, String[] args) {
         switch (args[1]) {
             case "village":
@@ -85,59 +85,63 @@ public class MainCommands {
                                 }
                                 tempstring = tempstring.trim();
                                 String[] names = tempstring.split(":");
-                                if (!serverdata.get("villages").containsKey(names[0])) {
-                                    if (Pattern.matches("[a-zA-Z][a-zA-Z ]+", names[0])) {
-                                        if (serverdata.get("empires").containsKey(names[1])) {
-                                            sender.sendMessage(ChatColor.DARK_RED + "The empire name: " + ChatColor.RED + names[1] + ChatColor.DARK_RED + ", already exists!");
-                                        } else if (Pattern.matches("[a-zA-Z][a-zA-Z ]+", names[1])) {
-                                            if (names[0].length() <= Config.getInt("Village Settings.Name Max Length")) {
-                                                if (names[1].length() <= Config.getInt("Empire Settings.Name Max Length")) {
-                                                    if (econ.has(player, Config.getInt("Empire Settings.Creation Cost"))) {
-                                                        econ.withdrawPlayer(player, Config.getInt("Empire Settings.Creation Cost"));
-                                                        serverdata.get("empires").put(names[1], new HashMap<>());
-                                                        //Main Village
-                                                        serverdata.get("empires").get(names[1]).put("mav", playervillage);
-                                                        serverdata.get("empires").get(names[1]).put("emr", Config.get("Empire Settings.Default Rank"));
-                                                        //Number of villages in empire
-                                                        serverdata.get("empires").get(names[1]).put("vils", new ArrayList<>());
-                                                        ((ArrayList) serverdata.get("empires").get(names[1]).get("vils")).add(serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village"));
-                                                        ((ArrayList) serverdata.get("empires").get(names[1]).get("vils")).add(names[0]);
-                                                        serverdata.get("empires").get(names[1]).put("vau", Config.getInt("Empire Settings.Initial Cash In Village Vault"));
-                                                        serverdata.get("villages").get(playervillage).put("emp", names[1]);
-                                                        ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
-                                                        if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
-                                                            serverdata.get("villages").get(playervillage).remove("man");
+                                if (names.length == 2) {
+                                    if (!serverdata.get("villages").containsKey(names[0])) {
+                                        if (Pattern.matches("[a-zA-Z][a-zA-Z ]+", names[0])) {
+                                            if (serverdata.get("empires").containsKey(names[1])) {
+                                                sender.sendMessage(ChatColor.DARK_RED + "The empire name: " + ChatColor.RED + names[1] + ChatColor.DARK_RED + ", already exists!");
+                                            } else if (Pattern.matches("[a-zA-Z][a-zA-Z ]+", names[1])) {
+                                                if (names[0].length() <= Config.getInt("Village Settings.Name Max Length")) {
+                                                    if (names[1].length() <= Config.getInt("Empire Settings.Name Max Length")) {
+                                                        if (econ.has(player, Config.getInt("Empire Settings.Creation Cost"))) {
+                                                            econ.withdrawPlayer(player, Config.getInt("Empire Settings.Creation Cost"));
+                                                            serverdata.get("empires").put(names[1], new HashMap<>());
+                                                            //Main Village
+                                                            serverdata.get("empires").get(names[1]).put("mav", playervillage);
+                                                            serverdata.get("empires").get(names[1]).put("emr", Config.get("Empire Settings.Default Rank"));
+                                                            //Number of villages in empire
+                                                            serverdata.get("empires").get(names[1]).put("vils", new ArrayList<>());
+                                                            ((ArrayList) serverdata.get("empires").get(names[1]).get("vils")).add(serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village"));
+                                                            ((ArrayList) serverdata.get("empires").get(names[1]).get("vils")).add(names[0]);
+                                                            serverdata.get("empires").get(names[1]).put("vau", Config.getInt("Empire Settings.Initial Cash In Village Vault"));
+                                                            serverdata.get("villages").get(playervillage).put("emp", names[1]);
+                                                            ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                            if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
+                                                                serverdata.get("villages").get(playervillage).remove("man");
+                                                            }
+                                                            serverdata.get("playerdata").remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                            serverdata.get("playerdata").put(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString(), new HashMap<>());
+                                                            serverdata.get("playerdata").get(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString()).put("village", names[0]);
+                                                            serverdata.get("villages").put(names[0], new HashMap<>());
+                                                            serverdata.get("villages").get(names[0]).put("own", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
+                                                            serverdata.get("villages").get(names[0]).put("vir", Config.get("Village Settings.Default Rank"));
+                                                            serverdata.get("villages").get(names[0]).put("plc", 0);
+                                                            serverdata.get("villages").get(names[0]).put("emp", names[1]);
+                                                            serverdata.get("villages").get(names[0]).put("vau", Config.getInt("Village Settings.Initial Cash In Village Vault"));
+                                                            sender.sendMessage(ChatColor.BLUE + "You have successfully created the empire " + ChatColor.AQUA + names[1]);
+                                                            Bukkit.getOnlinePlayers().stream().filter((p) -> (!p.equals(player))).forEach((p) -> {
+                                                                p.sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + " has created the empire " + ChatColor.LIGHT_PURPLE + names[1] + ChatColor.DARK_PURPLE + ", by promoting " + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the owner of the newly found village " + ChatColor.LIGHT_PURPLE + names[0]);
+                                                            });
+                                                        } else {
+                                                            sender.sendMessage(ChatColor.DARK_RED + "It costs $" + Config.getInt("Empire Settings.Creation Cost") + " to create an empire");
                                                         }
-                                                        serverdata.get("playerdata").remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
-                                                        serverdata.get("playerdata").put(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString(), new HashMap<>());
-                                                        serverdata.get("playerdata").get(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString()).put("village", names[0]);
-                                                        serverdata.get("villages").put(names[0], new HashMap<>());
-                                                        serverdata.get("villages").get(names[0]).put("own", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
-                                                        serverdata.get("villages").get(names[0]).put("vir", Config.get("Village Settings.Default Rank"));
-                                                        serverdata.get("villages").get(names[0]).put("plc", 0);
-                                                        serverdata.get("villages").get(names[0]).put("emp", names[1]);
-                                                        serverdata.get("villages").get(names[0]).put("vau", Config.getInt("Village Settings.Initial Cash In Village Vault"));
-                                                        sender.sendMessage(ChatColor.BLUE + "You have successfully created the empire " + ChatColor.AQUA + names[1]);
-                                                        Bukkit.getOnlinePlayers().stream().filter((p) -> (!p.equals(player))).forEach((p) -> {
-                                                            p.sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + " has created the empire " + ChatColor.LIGHT_PURPLE + names[1] + ChatColor.DARK_PURPLE + ", by promoting " + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the owner of the newly found village " + ChatColor.LIGHT_PURPLE + names[0]);
-                                                        });
                                                     } else {
-                                                        sender.sendMessage(ChatColor.DARK_RED + "It costs $" + Config.getInt("Empire Settings.Creation Cost") + " to create an empire");
+                                                        sender.sendMessage(ChatColor.DARK_RED + "The empire's name can only be a maximum of " + ChatColor.RED + Config.getInt("Empire Settings.Name Max Length") + ChatColor.DARK_RED + " letters long");
                                                     }
                                                 } else {
-                                                    sender.sendMessage(ChatColor.DARK_RED + "The empire's name can only be a maximum of " + ChatColor.RED + Config.getInt("Empire Settings.Name Max Length") + ChatColor.DARK_RED + " letters long");
+                                                    sender.sendMessage(ChatColor.DARK_RED + "The village's name can only be a maximum of " + ChatColor.RED + Config.getInt("Village Settings.Name Max Length") + ChatColor.DARK_RED + " letters long");
                                                 }
                                             } else {
-                                                sender.sendMessage(ChatColor.DARK_RED + "The village's name can only be a maximum of " + ChatColor.RED + Config.getInt("Village Settings.Name Max Length") + ChatColor.DARK_RED + " letters long");
+                                                sender.sendMessage(ChatColor.DARK_RED + "The empire's name can only contain letters");
                                             }
                                         } else {
-                                            sender.sendMessage(ChatColor.DARK_RED + "The empire's name can only contain letters");
+                                            sender.sendMessage(ChatColor.DARK_RED + "The village's name can only contain letters");
                                         }
                                     } else {
-                                        sender.sendMessage(ChatColor.DARK_RED + "The village's name can only contain letters");
+                                        sender.sendMessage(ChatColor.DARK_RED + "The village name: " + ChatColor.RED + names[0] + ChatColor.DARK_RED + ", already exists!");
                                     }
                                 } else {
-                                    sender.sendMessage(ChatColor.DARK_RED + "The village name: " + ChatColor.RED + names[0] + ChatColor.DARK_RED + ", already exists!");
+                                    sender.sendMessage(ChatColor.DARK_RED + "Please use the proper format: /ec create empire <player> <player village name>:<empire name>");
                                 }
                             } else {
                                 sender.sendMessage(ChatColor.DARK_RED + "Upon creating an empire, you must select a previous village manager to become the owner of the new village created in the process of becoming an empire");
@@ -157,21 +161,21 @@ public class MainCommands {
                 break;
         }
     }
-    
+
     public static void Apply(String targetvillage, String playername) {
         if (serverdata.get("villages").get(targetvillage).get("app") == null) {
             serverdata.get("villages").get(targetvillage).put("app", new ArrayList<>());
         }
         ((ArrayList) serverdata.get("villages").get(targetvillage).get("app")).add(playername);
         Bukkit.getPlayer(UUID.fromString(playername)).sendMessage(ChatColor.BLUE + "Your application to " + ChatColor.AQUA + targetvillage + ChatColor.BLUE + " has been sent successfully");
-        if (Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(targetvillage).get("own").toString())) != null) {
+        if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(targetvillage).get("own").toString())).isOnline()) {
             Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(targetvillage).get("own").toString())).sendMessage(ChatColor.AQUA + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + " has sent an application to join the village, to accept use /vil manage accept " + Bukkit.getPlayer(UUID.fromString(playername)).getName());
         }
         if (serverdata.get("villages").get(targetvillage) != null) {
             if (serverdata.get("villages").get(targetvillage).get("man") != null) {
                 temparraylist.clear();
                 temparraylist.addAll((ArrayList) serverdata.get("villages").get(targetvillage).get("man"));
-                temparraylist.stream().filter((p) -> (Bukkit.getPlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
+                temparraylist.stream().filter((p) -> (Bukkit.getOfflinePlayer(UUID.fromString(p)).isOnline())).forEach((p) -> {
                     Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + Bukkit.getPlayer(UUID.fromString(playername)).getName() + ChatColor.DARK_PURPLE + " has sent an application to join the village, to accept use /vil manage accept " + Bukkit.getPlayer(UUID.fromString(playername)).getName());
                 });
             }
