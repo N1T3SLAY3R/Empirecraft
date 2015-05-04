@@ -418,13 +418,13 @@ public class Main extends JavaPlugin {
                                             if (z == -4) {
                                                 tempstring += ChatColor.AQUA + "            Key";
                                             } else if (z == -3) {
-                                                tempstring += ChatColor.AQUA + " ⬛ = Your village's territory";
+                                                tempstring += ChatColor.AQUA + " â¬› = Your village's territory";
                                             } else if (z == -2) {
-                                                tempstring += ChatColor.RED + " ⬛ = Enemy territory";
+                                                tempstring += ChatColor.RED + " â¬› = Enemy territory";
                                             } else if (z == -1) {
-                                                tempstring += ChatColor.GREEN + " ⬛ = Ally territory";
+                                                tempstring += ChatColor.GREEN + " â¬› = Ally territory";
                                             } else if (z == 0) {
-                                                tempstring += ChatColor.YELLOW + " ⬛ = Neutral territory";
+                                                tempstring += ChatColor.YELLOW + " â¬› = Neutral territory";
                                             } else if (z == 1) {
                                                 tempstring += ChatColor.GRAY + " -  = Wilderness territory";
                                             } else if (z == 2) {
@@ -1139,7 +1139,11 @@ public class Main extends JavaPlugin {
                                                                                         if (serverdata.get("villages").get(playervillage).get("ene") != null) {
                                                                                             if (!((HashMap) serverdata.get("villages").get(playervillage).get("ene")).containsKey(tempstring)) {
                                                                                                 if (!serverdata.get("villages").get(tempstring).containsKey("inv")) {
-                                                                                                    DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                                    if ((Integer) serverdata.get("villages").get(tempstring).get("plc") == 0) {
+                                                                                                        DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                                    } else {
+                                                                                                        sender.sendMessage(ChatColor.DARK_RED + "You cannot declare war on " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " until the create or initiate the creation of a rank structure");
+                                                                                                    }
                                                                                                 } else {
                                                                                                     sender.sendMessage(ChatColor.DARK_RED + "The village " + ChatColor.RED + tempstring + ChatColor.DARK_RED + ", still has village creation immunity for " + ChatColor.RED + serverdata.get("villages").get(tempstring).get("inv") + ChatColor.DARK_RED + " seconds");
                                                                                                 }
@@ -2016,14 +2020,14 @@ public class Main extends JavaPlugin {
                                                                                         + ChatColor.BLUE + "\nIncome Time Delay: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Income Timer")
                                                                                         + ChatColor.BLUE + "          Upkeep: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Upkeep")
                                                                                         + ChatColor.BLUE + "          Revenue: " + ChatColor.AQUA + Config.get("Village Structures." + tempstring + ".Productions." + m + ".Revenue");
-                                                                                if (!Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Required Materials").isEmpty()) {
+                                                                                if (Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Required Materials") != null) {
                                                                                     tempstring = ChatColor.BLUE + "\nRequired Materials (Type/Amount): " + ChatColor.AQUA;
                                                                                     Config.getStringList("Village Structures." + tempstring + ".Productions." + m + ".Required Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
                                                                                         tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
                                                                                     });
                                                                                     tempstring2 += tempstring;
                                                                                 }
-                                                                                if (!Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Produced Materials").isEmpty()) {
+                                                                                if (Config.getList("Village Structures." + tempstring + ".Productions." + m + ".Produced Materials") != null) {
                                                                                     tempstring = ChatColor.BLUE + "\nProduced Materials (Type/Amount): " + ChatColor.AQUA;
                                                                                     Config.getStringList("Village Structures." + tempstring + ".Productions." + m + ".Produced Materials").stream().map((s) -> s.split(":")).forEach((req) -> {
                                                                                         tempstring += "\n" + req[0] + ChatColor.BLUE + " / " + ChatColor.AQUA + req[1];
@@ -2787,6 +2791,10 @@ public class Main extends JavaPlugin {
     }
 }
 /*
+ how to destroy a village that had no main building and why this village can destroy another village to the main building (Should be good)
+
+ IF ISSUES ON REPETITIVE METHODS... CONSIDER MISSING %, ex) WOOD:5%100
+
  KEY THINGS NEED TO BE DONE:
  CHECK FOR ISSUES WITH LADDERS AND BLOCKS THAT REQUIRE A BLOCK BEHIND THEM TO BE PLACED
 
@@ -2795,8 +2803,6 @@ public class Main extends JavaPlugin {
  Structure pre-view of size
 
  Plot sale sign, player types command, he places sign down, sign lines change, other players click sign to purchase
-
- Chance of different types of productions, such as %50 means it might produce coal or it might not
 
  Catapult Structure
  -Fires Blocks with a spherical radius size, it explodes and damages on impact

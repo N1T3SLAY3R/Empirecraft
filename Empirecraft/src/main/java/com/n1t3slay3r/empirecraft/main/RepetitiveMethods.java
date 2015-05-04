@@ -90,7 +90,7 @@ public class RepetitiveMethods {
                                     } catch (IOException | InvalidConfigurationException ex) {
                                         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                                     }
-                                    Integer ny = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Height") - 2, nx = (Integer) x * 16 - 2, nz = (Integer) z * 16 - 1;
+                                    Integer ny = ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) + tempyaml.getInt("Height") - 2, nx = (Integer) x * 16 - 1, nz = (Integer) z * 16;
                                     String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
                                     Boolean fin = false, cont = false;
                                     Block chest;
@@ -1119,6 +1119,8 @@ public class RepetitiveMethods {
                                     }
                                 }
                             } else if (!((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")).equals(Config.getInt("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Total Hp"))) {
+                                System.out.println(block.getType());
+                                System.out.println(block.getLocation().toString());
                                 for (ItemStack i : ((InventoryHolder) block.getState()).getInventory().getContents()) {
                                     if (!repaired) {
                                         for (String p : Config.getStringList("Village Structures." + structure + ".Block Hp")) {
@@ -1201,7 +1203,10 @@ public class RepetitiveMethods {
                                                 if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                     for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                         String[] pro = p.split(":");
-                                                        ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                        String[] per = pro[1].split("%");
+                                                        if (Math.random() * 100 <= Double.parseDouble(per[1])) {
+                                                            ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                        }
                                                     }
                                                 }
                                                 if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
@@ -1223,7 +1228,10 @@ public class RepetitiveMethods {
                                         } else if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                             for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                 String[] pro = p.split(":");
-                                                ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                String[] per = pro[1].split("%");
+                                                if (Math.random() * 100 <= Double.parseDouble(per[1])) {
+                                                    ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                }
                                             }
                                             if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                 Integer sx, sz;
@@ -1273,7 +1281,10 @@ public class RepetitiveMethods {
                                                 if (Config.isSet("Village Structures." + structure + ".Produced Materials")) {
                                                     for (String p : Config.getStringList("Village Structures." + structure + ".Produced Materials")) {
                                                         String[] pro = p.split(":");
-                                                        ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                        String[] per = pro[1].split("%");
+                                                        if (Math.random() * 100 <= Double.parseDouble(per[1])) {
+                                                            ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                        }
                                                     }
                                                 }
                                             } else {
@@ -1282,7 +1293,10 @@ public class RepetitiveMethods {
                                         } else if (Config.isSet("Village Structures." + structure + ".Produced Materials")) {
                                             for (String p : Config.getStringList("Village Structures." + structure + ".Produced Materials")) {
                                                 String[] pro = p.split(":");
-                                                ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                String[] per = pro[1].split("%");
+                                                if (Math.random() * 100 <= Double.parseDouble(per[1])) {
+                                                    ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
+                                                }
                                             }
                                             serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Revenue") - Config.getInt("Village Structures." + structure + ".Upkeep"));
                                         } else {

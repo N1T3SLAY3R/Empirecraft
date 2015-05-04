@@ -31,6 +31,7 @@ import org.bukkit.Material;
 import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.IRON_DOOR;
 import static org.bukkit.Material.LAVA;
+import static org.bukkit.Material.LEVER;
 import static org.bukkit.Material.LOG;
 import static org.bukkit.Material.SANDSTONE;
 import static org.bukkit.Material.STATIONARY_LAVA;
@@ -71,6 +72,8 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -83,6 +86,7 @@ import org.bukkit.material.Dispenser;
 import org.bukkit.material.Furnace;
 import org.bukkit.material.Gate;
 import org.bukkit.material.Ladder;
+import org.bukkit.material.Lever;
 import org.bukkit.material.PistonBaseMaterial;
 import org.bukkit.material.PoweredRail;
 import org.bukkit.material.Pumpkin;
@@ -337,7 +341,7 @@ public class Listeners implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (player.isOp() && Config.getString("Global Settings.Auto Update Notifier").equals("on")) {
-            Update updateCheck = new Update(80075, "ed2919ef1dcca33b92ac5571e73d53ba1e474a4e", player.getUniqueId().toString());
+            //Update updateCheck = new Update(80075, "ed2919ef1dcca33b92ac5571e73d53ba1e474a4e", player.getUniqueId().toString());
         }
     }
 
@@ -544,6 +548,248 @@ public class Listeners implements Listener {
             }
         }
     }
+    
+    @EventHandler
+    public void onPlayerBucketFillEvent(PlayerBucketFillEvent event) {
+        Block block = event.getBlockClicked();
+        Player player = event.getPlayer();
+        String playername = player.getUniqueId().toString();
+        String world = block.getWorld().getUID().toString();
+        Integer x = block.getLocation().getChunk().getX(), z = block.getLocation().getChunk().getZ();
+        if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "cla")) {
+            if (MainConversions.isPartInHashMap(serverdata.get("playerdata"), playername, "village")) {
+                String pvillage = serverdata.get("playerdata").get(playername).get("village").toString(), evillage = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("cla").toString();
+                if (pvillage.equals(evillage)) {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        System.out.println(tplayer + " " + playername + " " + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)));
+                        if (tplayer.equals(playername)) {
+                            //Let Run
+                        } else if (serverdata.get("playerdata").get(tplayer).containsKey("mom")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("mom").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Members.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else if (serverdata.get("villages").get(pvillage).containsKey("man") && !((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                        if (!((ArrayList) serverdata.get("villages").get(pvillage).get("man")).contains(playername) && !playername.equals(serverdata.get("villages").get(pvillage).get("own"))) {
+                            event.setCancelled(true);
+                        }
+                    } else if (playername.equals(serverdata.get("villages").get(pvillage).get("own")) && !((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                        //Do nothing/let event occur
+                    } else {
+                        event.setCancelled(true);
+                    }
+                } else if (MainConversions.enemyEmpire(pvillage, evillage) || MainConversions.isPartInHashMap(serverdata.get("villages").get(evillage), "ene", pvillage)) {
+                    if (MainConversions.enemyEmpire(pvillage, evillage) && MainConversions.isPartInHashMap(serverdata.get("villages").get(evillage), "ene", pvillage)) {
+                        if (((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) == null || ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) == null) {
+                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Integer.parseInt(((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())).toString()) >= Integer.parseInt(((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage).toString())) {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) + ChatColor.DARK_RED + " seconds");
+                        } else {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) + ChatColor.DARK_RED + " seconds");
+                        }
+                    } else if (MainConversions.enemyEmpire(pvillage, evillage)) {
+                        if (((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) == null) {
+                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                                event.setCancelled(true);
+                            }
+                        } else {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) + ChatColor.DARK_RED + " seconds");
+                        }
+                    } else if (((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) == null) {
+                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+                        event.setCancelled(true);
+                        player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) + ChatColor.DARK_RED + " seconds");
+                    }
+                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(evillage), "all", pvillage)) {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        if (serverdata.get("playerdata").get(tplayer).containsKey("moa")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("moa").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Allys.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+                        event.setCancelled(true);
+                    }
+                } else {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        if (serverdata.get("playerdata").get(tplayer).containsKey("moo")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("moo").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Outsiders.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+
+                        event.setCancelled(true);
+                    }
+                }
+            } else if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                if (serverdata.get("playerdata").get(tplayer).containsKey("moo")) {
+                    if (serverdata.get("playerdata").get(tplayer).get("moo").equals("off")) {
+                        event.setCancelled(true);
+                    }
+                } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                    if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                        event.setCancelled(true);
+                    }
+                } else if (Config.getString("Player Plots.Outsiders.Modify").equals("off")) {
+                    event.setCancelled(true);
+                }
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent event) {
+        Block block = event.getBlockClicked();
+        Player player = event.getPlayer();
+        String playername = player.getUniqueId().toString();
+        String world = block.getWorld().getUID().toString();
+        Integer x = block.getLocation().getChunk().getX(), z = block.getLocation().getChunk().getZ();
+        if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "cla")) {
+            if (MainConversions.isPartInHashMap(serverdata.get("playerdata"), playername, "village")) {
+                String pvillage = serverdata.get("playerdata").get(playername).get("village").toString(), evillage = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("cla").toString();
+                if (pvillage.equals(evillage)) {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        System.out.println(tplayer + " " + playername + " " + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)));
+                        if (tplayer.equals(playername)) {
+                            //Let Run
+                        } else if (serverdata.get("playerdata").get(tplayer).containsKey("mom")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("mom").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Members.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else if (serverdata.get("villages").get(pvillage).containsKey("man") && !((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                        if (!((ArrayList) serverdata.get("villages").get(pvillage).get("man")).contains(playername) && !playername.equals(serverdata.get("villages").get(pvillage).get("own"))) {
+                            event.setCancelled(true);
+                        }
+                    } else if (playername.equals(serverdata.get("villages").get(pvillage).get("own")) && !((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                        //Do nothing/let event occur
+                    } else {
+                        event.setCancelled(true);
+                    }
+                } else if (MainConversions.enemyEmpire(pvillage, evillage) || MainConversions.isPartInHashMap(serverdata.get("villages").get(evillage), "ene", pvillage)) {
+                    if (MainConversions.enemyEmpire(pvillage, evillage) && MainConversions.isPartInHashMap(serverdata.get("villages").get(evillage), "ene", pvillage)) {
+                        if (((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) == null || ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) == null) {
+                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Integer.parseInt(((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())).toString()) >= Integer.parseInt(((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage).toString())) {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) + ChatColor.DARK_RED + " seconds");
+                        } else {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) + ChatColor.DARK_RED + " seconds");
+                        }
+                    } else if (MainConversions.enemyEmpire(pvillage, evillage)) {
+                        if (((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) == null) {
+                            if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                                event.setCancelled(true);
+                            }
+                        } else {
+                            event.setCancelled(true);
+                            player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("empires").get(serverdata.get("villages").get(pvillage).get("emp").toString()).get("ene")).get(serverdata.get("empires").get(serverdata.get("villages").get(evillage).get("emp").toString())) + ChatColor.DARK_RED + " seconds");
+                        }
+                    } else if (((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) == null) {
+                        if (((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).containsKey("str")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+                        event.setCancelled(true);
+                        player.sendMessage(ChatColor.DARK_RED + "The war doesn't start for " + ChatColor.RED + ((HashMap) serverdata.get("villages").get(evillage).get("ene")).get(pvillage) + ChatColor.DARK_RED + " seconds");
+                    }
+                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(evillage), "all", pvillage)) {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        if (serverdata.get("playerdata").get(tplayer).containsKey("moa")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("moa").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Allys.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+                        event.setCancelled(true);
+                    }
+                } else {
+                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                        String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        if (serverdata.get("playerdata").get(tplayer).containsKey("moo")) {
+                            if (serverdata.get("playerdata").get(tplayer).get("moo").equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                            if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                                event.setCancelled(true);
+                            }
+                        } else if (Config.getString("Player Plots.Outsiders.Modify").equals("off")) {
+                            event.setCancelled(true);
+                        }
+                    } else {
+
+                        event.setCancelled(true);
+                    }
+                }
+            } else if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
+                String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                if (serverdata.get("playerdata").get(tplayer).containsKey("moo")) {
+                    if (serverdata.get("playerdata").get(tplayer).get("moo").equals("off")) {
+                        event.setCancelled(true);
+                    }
+                } else if (MainConversions.isPartInHashMap(serverdata.get("playerdata").get(tplayer), "modify", playername)) {
+                    if (((HashMap) serverdata.get("playerdata").get(tplayer).get("modify")).get(playername).equals("off")) {
+                        event.setCancelled(true);
+                    }
+                } else if (Config.getString("Player Plots.Outsiders.Modify").equals("off")) {
+                    event.setCancelled(true);
+                }
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
 
     @EventHandler
     public void onCreatureSpawn(CreatureSpawnEvent event) {
@@ -598,6 +844,7 @@ public class Listeners implements Listener {
                 if (pvillage.equals(evillage)) {
                     if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
                         String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        System.out.println(tplayer + " " + playername + " " + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)));
                         if (tplayer.equals(playername)) {
                             //Let Run
                         } else if (serverdata.get("playerdata").get(tplayer).containsKey("mom")) {
@@ -721,6 +968,7 @@ public class Listeners implements Listener {
                 if (pvillage.equals(evillage)) {
                     if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), x, z, "playerplot")) {
                         String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)).get("playerplot").toString();
+                        System.out.println(tplayer + " " + playername + " " + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(x)).get(z)));
                         if (tplayer.equals(playername)) {
                             //Let Run
                         } else if (serverdata.get("playerdata").get(tplayer).containsKey("mom")) {
@@ -860,6 +1108,7 @@ public class Listeners implements Listener {
                     if (pvillage.equals(evillage)) {
                         if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), cx, cz, "playerplot")) {
                             String tplayer = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(cx)).get(cz)).get("playerplot").toString();
+                            System.out.println(tplayer + " " + playername + " " + ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(cx)).get(cz)));
                             if (tplayer.equals(playername)) {
                                 //You own it so your good
                             } else if (serverdata.get("playerdata").get(tplayer).containsKey("com")) {
@@ -1248,7 +1497,7 @@ public class Listeners implements Listener {
                             event.setCancelled(true);
                         }
                     }
-                } else if (mat.equals(Material.LEVER)) {
+                } else if (mat.equals(LEVER)) {
                     if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(world), cx, cz, "cla")) {
                         if (MainConversions.isPartInHashMap(serverdata.get("playerdata"), playername, "village")) {
                             String pvillage = serverdata.get("playerdata").get(playername).get("village").toString(), evillage = ((HashMap) ((HashMap) serverdata.get("worldmap").get(world).get(cx)).get(cz)).get("cla").toString();
@@ -1609,7 +1858,7 @@ public class Listeners implements Listener {
                                                 } else if (mat == Material.TRIPWIRE_HOOK) {
                                                     tempwriteup.set("Scematic." + cy + "." + cx + "." + cz + ".typ", ((TripwireHook) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing().toString());
                                                 } else if (mat == Material.LEVER) {
-                                                    System.out.println(((TripwireHook) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing());
+                                                    tempwriteup.set("Scematic." + cy + "." + cx + "." + cz + ".typ", ((Lever) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing().toString());
                                                 }
                                                 if (Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getType() != Material.AIR) {
                                                     hp++;

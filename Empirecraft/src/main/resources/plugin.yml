@@ -81,7 +81,7 @@ permissions:
             empirecraft.village.manage.withdraw: true
             empirecraft.village.manage.claim: true
             empirecraft.village.manage.unclaim: true
-            empirecraft.village.manage.build: true
+            empirecraft.village.manage.build.*: true
             empirecraft.village.manage.buildlist: true
             empirecraft.village.manage.takedown: true
             empirecraft.village.manage.forsale: true
@@ -104,6 +104,7 @@ permissions:
             empirecraft.village.member.memberlist: true
             empirecraft.village.member.managerlist: true
             empirecraft.village.member.relations: true
+            empirecraft.village.member.setproduction: true
     empirecraft.main.*:
         description: Gives access to all main empirecraft commands
         children:
@@ -190,6 +191,8 @@ permissions:
         description: Deletes the structure file and save data based on its <name>
     empirecraft.admin.structuretypes:
         description: Displays a list of the possible structure types that you can create
+    empirecraft.admin.addchunk:
+        description: Adds the chunk to a multichunk upon creating one
     empirecraft.createvillage:
         description: Allows you to create a village
     empirecraft.createempire:
@@ -282,7 +285,7 @@ permissions:
         description: Claims land for the village
     empirecraft.village.manage.unclaim:
         description: Unclaims land from the village
-    empirecraft.village.manage.build:
+    empirecraft.village.manage.build.*:
         description: Builds a structure over a certain period of time
     empirecraft.village.manage.buildlist:
         description: Lists all the types of structures you can build
@@ -320,6 +323,8 @@ permissions:
         description: Displays a list of all the managers in the village
     empirecraft.village.member.relations:
         description: View all your current alliances and enemys
+    empirecraft.village.member.setproduction:
+        description: Changes the production of the structure you are standing in
     empirecraft.empire:
         description: Allows you to use the base empire command chain
     empirecraft.empire.follower:
