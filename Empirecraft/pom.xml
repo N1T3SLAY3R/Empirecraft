@@ -48,11 +48,11 @@
         </repository>
         <repository>
             <id>worldedit-repo</id>
-            <url>http://maven.sk89q.com/repo/com/sk89q/worldedit/6.0.0-SNAPSHOT/</url>
+            <url>http://maven.sk89q.com/artifactory/repo/com/sk89q/worldedit/6.0.0-SNAPSHOT/</url>
         </repository>
         <repository>
             <id>worldguard-repo</id>
-            <url>http://mc-repo.alexbond.info/artifactory/repo/com/sk89q/worldguard/6.0.0-SNAPSHOT/</url>
+            <url>http://maven.sk89q.com/artifactory/repo/com/sk89q/worldguard/6.0.0-SNAPSHOT/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -81,14 +81,14 @@
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>6.0.0</version>
+            <version>6.0.0-SNAPSHOT</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>
-            <version>6.0.0</version>
+            <version>6.0.0-SNAPSHOT</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
