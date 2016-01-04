@@ -369,7 +369,9 @@ public class RepetitiveMethods {
                                                     xx = nx;
                                                     zz = nz;
                                                     skip++;
+                                                    System.out.println(tMap.keySet() + " " + tMap.get(sy).keySet() + " " + tMap.get(sy).get(sx));
                                                     mat = Material.getMaterial(tempyaml.getString("Scematic." + ny + "." + nx + "." + nz + ".id"));
+                                                    System.out.println(mat + " " + Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).getLocation());
                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
                                                         nx = Math.abs(zz - 17);
                                                         nz = xx;
@@ -1186,7 +1188,7 @@ public class RepetitiveMethods {
                                     String village = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString();
                                     if (Config.getString("Village Structures." + structure + ".Type").equals("Normal") || Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
                                         String proc = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("pro").toString();
-                                        if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
+                                        if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
                                             Boolean cont = true;
                                             for (String s : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Required Materials")) {
                                                 String[] req = s.split(":");
@@ -1200,7 +1202,7 @@ public class RepetitiveMethods {
                                                     ((InventoryHolder) block.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(req[0]), Integer.parseInt(req[1])));
                                                 }
                                                 serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
-                                                if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                                if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                     for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                         String[] pro = p.split(":");
                                                         String[] per = pro[1].split("%");
@@ -1209,7 +1211,7 @@ public class RepetitiveMethods {
                                                         }
                                                     }
                                                 }
-                                                if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                                if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                     Integer sx, sz;
                                                     for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                         String[] pro = p.split(":");
@@ -1225,7 +1227,7 @@ public class RepetitiveMethods {
                                             } else {
                                                 serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
                                             }
-                                        } else if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
+                                        } else if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                             for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Produced Materials")) {
                                                 String[] pro = p.split(":");
                                                 String[] per = pro[1].split("%");
@@ -1233,7 +1235,7 @@ public class RepetitiveMethods {
                                                     ((InventoryHolder) block.getState()).getInventory().addItem(new ItemStack(Material.getMaterial(pro[0]), Integer.parseInt(pro[1])));
                                                 }
                                             }
-                                            if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                            if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                 Integer sx, sz;
                                                 for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                     String[] pro = p.split(":");
@@ -1248,7 +1250,7 @@ public class RepetitiveMethods {
                                             }
                                             serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
                                         } else {
-                                            if (Config.isSet("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
+                                            if (Config.isList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                 Integer sx, sz;
                                                 for (String p : Config.getStringList("Village Structures." + structure + ".Productions." + proc + ".Animals")) {
                                                     String[] pro = p.split(":");
@@ -1264,7 +1266,7 @@ public class RepetitiveMethods {
                                             serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Revenue") - Config.getInt("Village Structures." + structure + ".Productions." + proc + ".Upkeep"));
                                         }
                                     } else {
-                                        if (Config.isSet("Village Structures." + structure + ".Required Materials")) {
+                                        if (Config.isList("Village Structures." + structure + ".Required Materials")) {
                                             Boolean cont = true;
                                             for (String s : Config.getStringList("Village Structures." + structure + ".Required Materials")) {
                                                 String[] req = s.split(":");
@@ -1278,7 +1280,7 @@ public class RepetitiveMethods {
                                                     ((InventoryHolder) block.getState()).getInventory().removeItem(new ItemStack(Material.getMaterial(req[0]), Integer.parseInt(req[1])));
                                                 }
                                                 serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) + Config.getInt("Village Structures." + structure + ".Revenue") - Config.getInt("Village Structures." + structure + ".Upkeep"));
-                                                if (Config.isSet("Village Structures." + structure + ".Produced Materials")) {
+                                                if (Config.isList("Village Structures." + structure + ".Produced Materials")) {
                                                     for (String p : Config.getStringList("Village Structures." + structure + ".Produced Materials")) {
                                                         String[] pro = p.split(":");
                                                         String[] per = pro[1].split("%");
@@ -1290,7 +1292,7 @@ public class RepetitiveMethods {
                                             } else {
                                                 serverdata.get("villages").get(village).replace("vau", ((Integer) serverdata.get("villages").get(village).get("vau")) - Config.getInt("Village Structures." + structure + ".Upkeep"));
                                             }
-                                        } else if (Config.isSet("Village Structures." + structure + ".Produced Materials")) {
+                                        } else if (Config.isList("Village Structures." + structure + ".Produced Materials")) {
                                             for (String p : Config.getStringList("Village Structures." + structure + ".Produced Materials")) {
                                                 String[] pro = p.split(":");
                                                 String[] per = pro[1].split("%");

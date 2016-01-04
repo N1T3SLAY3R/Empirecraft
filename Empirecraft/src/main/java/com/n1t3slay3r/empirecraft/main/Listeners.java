@@ -40,6 +40,7 @@ import static org.bukkit.Material.WATER;
 import static org.bukkit.Material.WOOD;
 import static org.bukkit.Material.WOODEN_DOOR;
 import static org.bukkit.Material.WOOL;
+import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import static org.bukkit.block.BlockFace.EAST;
 import static org.bukkit.block.BlockFace.NORTH;
@@ -414,14 +415,14 @@ public class Listeners implements Listener {
                                         nx = Integer.parseInt(sx) + x * 16 - 1;
                                         nz = Integer.parseInt(sz) + z * 16 - 1;
                                     } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("e")) {
-                                        nx = Integer.parseInt(sz) + z * 16;
+                                        nx = Integer.parseInt(sz) + z * 16 - 1;
                                         nz = Math.abs(Integer.parseInt(sx) + x * 16 - 16);
                                     } else if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("s")) {
                                         nx = 16 - Integer.parseInt(sx) + x * 16;
                                         nz = 16 - Integer.parseInt(sz) + z * 16;
                                     } else {
                                         nx = Math.abs(Integer.parseInt(sz) + z * 16 - 16);
-                                        nz = Integer.parseInt(sx) + x * 16;
+                                        nz = Integer.parseInt(sx) + x * 16 - 1;
                                     }
                                     if (!Bukkit.getWorld(UUID.fromString(w)).getBlockAt(nx, ny, nz).getType().equals(AIR)) {
                                         c++;
@@ -1776,7 +1777,7 @@ public class Listeners implements Listener {
                                                     } else if (mat == Material.TRIPWIRE_HOOK) {
                                                         tempwriteup.set("Scematic." + c.getX() + "." + c.getZ() + "." + cy + "." + cx + "." + cz + ".typ", ((TripwireHook) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing().toString());
                                                     } else if (mat == Material.LEVER) {
-                                                        System.out.println(((TripwireHook) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing());
+                                                        tempwriteup.set("Scematic." + c.getX() + "." + c.getZ() + "." + cy + "." + cx + "." + cz + ".dat", ((Lever) Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getState().getData()).getFacing());
                                                     }
                                                     if (Bukkit.getWorld(player.getWorld().getUID()).getBlockAt(x, y, z).getType() != Material.AIR) {
                                                         hp++;

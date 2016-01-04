@@ -1032,7 +1032,7 @@ public class Main extends JavaPlugin {
                                                     } else if (args.length > 3) {
                                                         sender.sendMessage(ChatColor.DARK_RED + "Proper format: /vil owner settax <$$$$>");
                                                     } else {
-                                                        sender.sendMessage(ChatColor.DARK_GREEN + "/vil owner settax" + ChatColor.GREEN + " Sets the daily (24hr) tax price, players who cannot pay will go into debt and you will see what their debt is");
+                                                        sender.sendMessage(ChatColor.DARK_GREEN + "/vil owner settax" + ChatColor.GREEN + " Sets the " + Config.getLong("Village Settings.Tax Delay") + " second delay tax price, players who cannot pay will go into debt and you will see what their debt is");
                                                     }
                                                     break;
                                                 case "description":
@@ -1104,7 +1104,7 @@ public class Main extends JavaPlugin {
                                                     break;
                                                 case "2":
                                                     if (args.length == 2) {
-                                                        sender.sendMessage(ChatColor.DARK_GREEN + "                                        EMPIRECRAFT\n/vil owner settax <$$$$>" + ChatColor.GREEN + " Sets the daily (24hr) tax price, players who cannot pay will go into debt and you will see what their debt is\n"
+                                                        sender.sendMessage(ChatColor.DARK_GREEN + "                                        EMPIRECRAFT\n/vil owner settax <$$$$>" + ChatColor.GREEN + " Sets the " + Config.getLong("Village Settings.Tax Delay") + " second delay tax price, players who cannot pay will go into debt and you will see what their debt is\n"
                                                                 + ChatColor.DARK_GREEN + "/vil owner description <text>" + ChatColor.GREEN + " Sets the description for all to see\n"
                                                                 + ChatColor.DARK_GREEN + "/vil owner togglesetting <setting> <on/off>" + ChatColor.GREEN + " You can toggle fire, pvp, explosions, and mobs\n"
                                                                 + ChatColor.DARK_GREEN + "/vil owner settinglist" + ChatColor.GREEN + " View which settings are currently enabled and disabled\n"

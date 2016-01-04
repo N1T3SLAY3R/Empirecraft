@@ -1169,12 +1169,17 @@ public class MainExtended {
                                                                 if (serverdata.get("villages").get(v).get("man") != null) {
                                                                     temparraylist.addAll((Collection<? extends String>) serverdata.get("villages").get(v).get("man"));
                                                                 }
+                                                                //Newly added?
+                                                                if(Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(v).get("own").toString())).isOnline()){
+                                                                    temparraylist.add(serverdata.get("villages").get(v).get("own").toString());
+                                                                }
                                                             }
                                                             return v;
                                                         }).forEach((_item) -> {
                                                             temparraylist.stream().filter((p) -> ((Bukkit.getOfflinePlayer(UUID.fromString(p))).isOnline())).forEach((p) -> {
                                                                 if (!p.equals(playerid)) {
-                                                                    Bukkit.getPlayer(UUID.fromString(serverdata.get("empires").get(playerempire).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the empire!");
+                                                                    Bukkit.getPlayer(UUID.fromString(p)).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the empire!");
+                                                                    //Removed for ? reasons ? Bukkit.getPlayer(UUID.fromString(serverdata.get("empires").get(playerempire).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", Has just donated $" + ChatColor.LIGHT_PURPLE + args[2] + ChatColor.DARK_PURPLE + " to the empire!");
                                                                 }
                                                             });
                                                         });
