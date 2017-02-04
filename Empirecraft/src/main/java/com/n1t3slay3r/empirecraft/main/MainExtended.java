@@ -5,8 +5,12 @@
  */
 package com.n1t3slay3r.empirecraft.main;
 
-import com.n1t3slay3r.empirecraft.Commands.DiplomacyCommands;
-import com.n1t3slay3r.empirecraft.Commands.MainConversions;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.RequestList;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.War;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.Neutralize;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.Truce;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.Alliance;
+import com.n1t3slay3r.empirecraft.Uncategorized.QuickChecks;
 import static com.n1t3slay3r.empirecraft.main.Main.Config;
 import static com.n1t3slay3r.empirecraft.main.Main.econ;
 import static com.n1t3slay3r.empirecraft.main.Main.serverdata;
@@ -50,7 +54,7 @@ public class MainExtended {
                                                             tempstring += args[i] + " ";
                                                         }
                                                         tempstring = tempstring.trim();
-                                                        if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "vils", tempstring)) {
+                                                        if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "vils", tempstring)) {
                                                             serverdata.get("empires").get(playerempire).replace("mav", tempstring);
                                                             ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("vils")).stream().map((v) -> {
                                                                 temparraylist.clear();
@@ -96,7 +100,7 @@ public class MainExtended {
                                             if (args.length == 3) {
                                                 if (player.hasPermission("empirecraft.empire.leader.settax")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
-                                                        if (MainConversions.isInteger(args[2])) {
+                                                        if (QuickChecks.isInteger(args[2])) {
                                                             serverdata.get("empires").get(playerempire).put("tax", args[2]);
                                                             sender.sendMessage(ChatColor.BLUE + "Daily tax has been set to $" + ChatColor.AQUA + args[2] + ChatColor.BLUE + " for all the village's vaults to pay at tax time");
                                                         } else {
@@ -139,7 +143,7 @@ public class MainExtended {
                                             if (args.length == 3) {
                                                 if (player.hasPermission("empirecraft.empire.leader.withdraw")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
-                                                        if (MainConversions.isInteger(args[2])) {
+                                                        if (QuickChecks.isInteger(args[2])) {
                                                             if (((Integer) serverdata.get("empires").get(playerempire).get("vau")) >= Integer.parseInt(args[2])) {
                                                                 serverdata.get("empires").get(playerempire).put("vau", ((Integer) serverdata.get("empires").get(playerempire).get("vau")) - Integer.parseInt(args[2]));
                                                                 econ.depositPlayer(player, Integer.parseInt(args[2]));
@@ -166,8 +170,8 @@ public class MainExtended {
                                             if (args.length > 2) {
                                                 if (player.hasPermission("empirecraft.empire.leader.settp")) {
                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
-                                                        if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
-                                                            if (MainConversions.isVillageAlliedOrYoursEmpireWise(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").toString(), playerempire)) {
+                                                        if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isVillageAlliedOrYoursEmpireWise(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").toString(), playerempire)) {
                                                                 if (serverdata.get("empires").get(playerempire).containsKey("tp")) {
                                                                     tempstring = "";
                                                                     for (int i = 2; i < args.length; i++) {
@@ -257,8 +261,8 @@ public class MainExtended {
                                                         if (serverdata.get("villages").containsKey(tempstring)) {
                                                             if (!serverdata.get("villages").get(tempstring).containsKey("emp")) {
                                                                 if (serverdata.get("villages").get(tempstring).containsKey("emi")) {
-                                                                    if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "emi", playerempire)) {
-                                                                        if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "app", tempstring)) {
+                                                                    if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "emi", playerempire)) {
+                                                                        if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "app", tempstring)) {
                                                                             if (((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).size() < Config.getInt("Empire Ranks." + serverdata.get("empires").get(playerempire).get("emr") + ".Maximum villages allowed in empire")) {
                                                                                 ((ArrayList) serverdata.get("empires").get(playerempire).get("app")).remove(tempstring);
                                                                                 if (((ArrayList) serverdata.get("empires").get(playerempire).get("app")).isEmpty()) {
@@ -349,7 +353,7 @@ public class MainExtended {
                                                                 tempstring += args[i] + " ";
                                                             }
                                                             tempstring = tempstring.trim();
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "vils", tempstring)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "vils", tempstring)) {
                                                                 ((ArrayList) serverdata.get("empires").get(playerempire).get("vils")).remove(tempstring);
                                                                 serverdata.get("villages").get(tempstring).remove("emp");
                                                                 ((ArrayList<String>) serverdata.get("empires").get(playerempire).get("vils")).stream().map((v) -> {
@@ -788,12 +792,12 @@ public class MainExtended {
                                                                             if (!playerempire.equals(tempstring)) {
                                                                                 if (serverdata.get("empires").get(playerempire).get("ene") != null) {
                                                                                     if (!((HashMap) serverdata.get("empires").get(playerempire).get("ene")).containsKey(tempstring)) {
-                                                                                        DiplomacyCommands.War("empires", playerempire, tempstring, playerid);
+                                                                                        War.War("empires", playerempire, tempstring, playerid);
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.DARK_RED + "You are already at war with " + ChatColor.RED + tempstring);
                                                                                     }
                                                                                 } else {
-                                                                                    DiplomacyCommands.War("empires", playerempire, tempstring, playerid);
+                                                                                    War.War("empires", playerempire, tempstring, playerid);
                                                                                 }
                                                                             } else {
                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You cannot declare war on yourself!");
@@ -822,9 +826,9 @@ public class MainExtended {
                                                                         tempstring = tempstring.trim();
                                                                         if (serverdata.get("empires").containsKey(tempstring)) {
                                                                             if (!playerempire.equals(tempstring)) {
-                                                                                if (MainConversions.isPartInHashMap(serverdata.get("empires").get(tempstring), "ene", playerempire)) {
-                                                                                    if (!MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
-                                                                                        if (!MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "trr", playerempire)) {
+                                                                                if (QuickChecks.isPartInHashMap(serverdata.get("empires").get(tempstring), "ene", playerempire)) {
+                                                                                    if (!QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
+                                                                                        if (!QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "trr", playerempire)) {
                                                                                             if (serverdata.get("empires").get(tempstring).get("trr") == null) {
                                                                                                 serverdata.get("empires").get(tempstring).put("trr", new ArrayList<>());
                                                                                             }
@@ -837,7 +841,7 @@ public class MainExtended {
                                                                                             sender.sendMessage(ChatColor.DARK_RED + "You have already requested a truce with " + ChatColor.RED + tempstring);
                                                                                         }
                                                                                     } else {
-                                                                                        DiplomacyCommands.Truce("empires", playerempire, tempstring, playerid);
+                                                                                        Truce.Truce("empires", playerempire, tempstring, playerid);
                                                                                     }
                                                                                 } else {
                                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot request to have a truce when your not at war with " + ChatColor.RED + tempstring);
@@ -869,10 +873,10 @@ public class MainExtended {
                                                                         tempstring = tempstring.trim();
                                                                         if (serverdata.get("empires").containsKey(tempstring)) {
                                                                             if (!playerempire.equals(tempstring)) {
-                                                                                if (!MainConversions.isPartInHashMap(serverdata.get("empires").get(tempstring), "ene", playerempire)) {
-                                                                                    if (!MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
-                                                                                        if (!MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
-                                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "alr", playerempire)) {
+                                                                                if (!QuickChecks.isPartInHashMap(serverdata.get("empires").get(tempstring), "ene", playerempire)) {
+                                                                                    if (!QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
+                                                                                        if (!QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
+                                                                                            if (!QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "alr", playerempire)) {
                                                                                                 if (serverdata.get("empires").get(tempstring).get("alr") == null) {
                                                                                                     serverdata.get("empires").get(tempstring).put("alr", new ArrayList<>());
                                                                                                 }
@@ -885,7 +889,7 @@ public class MainExtended {
                                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You have already requested an alliance with " + ChatColor.RED + tempstring);
                                                                                             }
                                                                                         } else {
-                                                                                            DiplomacyCommands.Alliance("empires", playerempire, tempstring, playerid);
+                                                                                            Alliance.Alliance("empires", playerempire, tempstring, playerid);
                                                                                         }
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.DARK_RED + "You already have an alliance with " + ChatColor.RED + tempstring);
@@ -922,9 +926,9 @@ public class MainExtended {
                                                                         tempstring = tempstring.trim();
                                                                         if (serverdata.get("empires").containsKey(tempstring)) {
                                                                             if (!playerempire.equals(tempstring)) {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
-                                                                                    if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
-                                                                                        DiplomacyCommands.Neutralize("empires", playerempire, tempstring, playerid);
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
+                                                                                    if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "all", playerempire)) {
+                                                                                        Neutralize.Neutralize("empires", playerempire, tempstring, playerid);
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.DARK_RED + "You can only neutralize allys");
                                                                                     }
@@ -958,10 +962,10 @@ public class MainExtended {
                                                                         tempstring = tempstring.trim();
                                                                         if (serverdata.get("empires").containsKey(tempstring)) {
                                                                             if (!playerempire.equals(tempstring)) {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
-                                                                                    DiplomacyCommands.Alliance("empires", playerempire, tempstring, playerid);
-                                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
-                                                                                    DiplomacyCommands.Truce("empires", playerempire, tempstring, playerid);
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
+                                                                                    Alliance.Alliance("empires", playerempire, tempstring, playerid);
+                                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
+                                                                                    Truce.Truce("empires", playerempire, tempstring, playerid);
                                                                                 } else {
                                                                                     sender.sendMessage(ChatColor.RED + tempstring + ChatColor.DARK_RED + " currently has no requests of you");
                                                                                 }
@@ -969,13 +973,13 @@ public class MainExtended {
                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You cannot accept requests from yourself!");
                                                                             }
                                                                         } else {
-                                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
+                                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "alr", tempstring)) {
                                                                                 ((ArrayList) serverdata.get("empires").get(playerempire).get("alr")).remove(tempstring);
                                                                                 if (((ArrayList) serverdata.get("empires").get(playerempire).get("alr")).isEmpty()) {
                                                                                     serverdata.get("empires").get(playerempire).remove("alr");
                                                                                 }
                                                                             }
-                                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
+                                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(playerempire), "trr", tempstring)) {
                                                                                 ((ArrayList) serverdata.get("empires").get(playerempire).get("trr")).remove(tempstring);
                                                                                 if (((ArrayList) serverdata.get("empires").get(playerempire).get("trr")).isEmpty()) {
                                                                                     serverdata.get("empires").get(playerempire).remove("trr");
@@ -1004,7 +1008,7 @@ public class MainExtended {
                                                                         tempstring = tempstring.trim();
                                                                         if (serverdata.get("empires").containsKey(tempstring)) {
                                                                             if (!playerempire.equals(tempstring)) {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "alr", tempstring)) {
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "alr", tempstring)) {
                                                                                     ((ArrayList) serverdata.get("empires").get(playerempire).get("alr")).remove(tempstring);
                                                                                     if (((ArrayList) serverdata.get("empires").get(playerempire).get("alr")).isEmpty()) {
                                                                                         serverdata.get("empires").get(playerempire).remove("alr");
@@ -1013,7 +1017,7 @@ public class MainExtended {
                                                                                     if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).isOnline()) {
                                                                                         Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(serverdata.get("empires").get(tempstring).get("mav").toString()).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", leader of " + ChatColor.LIGHT_PURPLE + playerempire + ChatColor.DARK_PURPLE + ", has denied your alliance request");
                                                                                     }
-                                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "trr", tempstring)) {
+                                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("empires").get(tempstring), "trr", tempstring)) {
                                                                                     ((ArrayList) serverdata.get("empires").get(playerempire).get("trr")).remove(tempstring);
                                                                                     if (((ArrayList) serverdata.get("empires").get(playerempire).get("trr")).isEmpty()) {
                                                                                         serverdata.get("empires").get(playerempire).remove("trr");
@@ -1047,7 +1051,7 @@ public class MainExtended {
                                                                     if (serverdata.get("empires").get(playerempire).get("mav").equals(serverdata.get("playerdata").get(playerid).get("village")) && serverdata.get("villages").get(serverdata.get("playerdata").get(playerid).get("village").toString()).get("own").equals(playerid)) {
                                                                         if (serverdata.get("empires").get(playerempire) != null) {
                                                                             if (serverdata.get("empires").get(playerempire).get("alr") != null || serverdata.get("empires").get(playerempire).get("trr") != null) {
-                                                                                DiplomacyCommands.RequestList("empires", playerempire, sender);
+                                                                                RequestList.RequestList("empires", playerempire, sender);
                                                                             } else {
                                                                                 sender.sendMessage(ChatColor.DARK_RED + "There are currently no diplomacy requests for the empire");
                                                                             }

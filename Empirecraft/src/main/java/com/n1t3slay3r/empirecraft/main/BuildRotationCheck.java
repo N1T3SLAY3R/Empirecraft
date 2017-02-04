@@ -51,7 +51,7 @@ import org.bukkit.material.Wool;
 public class BuildRotationCheck {
 
     //Blocks that might not have the right direction (ex. stairs)
-    private static final List<String> blocks = Arrays.asList("ACACIA_STAIRS", "BIRCH_WOOD_STAIRS", "BRICK_STAIRS", "ACACIA_STAIRS", "BIRCH_WOOD_STAIRS", "BRICK_STAIRS", "COBBLESTONE_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "NETHER_BRICK_STAIRS", "QUARTZ_STAIRS", "SANDSTONE_STAIRS", "SANDSTONE", "SMOOTH_STAIRS", "SPRUCE_WOOD_STAIRS", "WOOD_STAIRS", "CHEST", "ACTIVATOR_RAIL", "POWERED_RAIL", "DROPPER", "DISPENSER", "WOOD", "WOOL", "LOG", "DETECTOR_RAIL", "PISTON_BASE", "PISTON_STICKY_BASE", "STEP", "WOOD_STEP", "TORCH", "REDSTONE_TORCH_OFF", "REDSTONE_TORCH_ON", "LADDER", "FURNACE", "BURNING_FURNACE", "RAILS", "PUMPKIN", "JACK_O_LANTERN", "FENCE_GATE", "BED", "BED_BLOCK");
+    private static final List<String> BLOCKS = Arrays.asList("ACACIA_STAIRS", "BIRCH_WOOD_STAIRS", "BRICK_STAIRS", "ACACIA_STAIRS", "BIRCH_WOOD_STAIRS", "BRICK_STAIRS", "COBBLESTONE_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "JUNGLE_WOOD_STAIRS", "NETHER_BRICK_STAIRS", "QUARTZ_STAIRS", "SANDSTONE_STAIRS", "SANDSTONE", "SMOOTH_STAIRS", "SPRUCE_WOOD_STAIRS", "WOOD_STAIRS", "CHEST", "ACTIVATOR_RAIL", "POWERED_RAIL", "DROPPER", "DISPENSER", "WOOD", "WOOL", "LOG", "DETECTOR_RAIL", "PISTON_BASE", "PISTON_STICKY_BASE", "STEP", "WOOD_STEP", "TORCH", "REDSTONE_TORCH_OFF", "REDSTONE_TORCH_ON", "LADDER", "FURNACE", "BURNING_FURNACE", "RAILS", "PUMPKIN", "JACK_O_LANTERN", "FENCE_GATE", "BED", "BED_BLOCK");
 
     public static void Set(String direction, Block block, Material mat, Integer cy, Integer x, Integer z, FileConfiguration tempyaml) {
         if (mat == Material.STEP) {
@@ -1562,7 +1562,7 @@ public class BuildRotationCheck {
     }
 
     public static boolean cont(Block block, Material mat, Block chest, FileConfiguration tempyaml, String part, String direction) {
-        if (!blocks.contains(mat.toString())) {
+        if (!BLOCKS.contains(mat.toString())) {
             return !block.getType().equals(mat) && !block.equals(chest);
         }
         if (block.equals(chest)) {

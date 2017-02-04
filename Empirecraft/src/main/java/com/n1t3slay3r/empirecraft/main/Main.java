@@ -1,11 +1,32 @@
 package com.n1t3slay3r.empirecraft.main;
 
-import com.n1t3slay3r.empirecraft.Commands.DiplomacyCommands;
-import com.n1t3slay3r.empirecraft.Commands.MainCommands;
-import com.n1t3slay3r.empirecraft.Commands.MainConversions;
-import com.n1t3slay3r.empirecraft.Commands.ManageCommands;
-import com.n1t3slay3r.empirecraft.Commands.MemberCommands;
-import com.n1t3slay3r.empirecraft.Commands.OwnerCommands;
+import com.n1t3slay3r.empirecraft.DiplomacyCommands.*;
+import com.n1t3slay3r.empirecraft.Listeners.OnArrowHit;
+import com.n1t3slay3r.empirecraft.Listeners.OnBlockBurn;
+import com.n1t3slay3r.empirecraft.Listeners.OnBlockForm;
+import com.n1t3slay3r.empirecraft.Listeners.OnBlockIgnite;
+import com.n1t3slay3r.empirecraft.Listeners.OnBlockMove;
+import com.n1t3slay3r.empirecraft.Listeners.OnCraftItem;
+import com.n1t3slay3r.empirecraft.Listeners.OnCreatureSpawn;
+import com.n1t3slay3r.empirecraft.Listeners.OnEntityBlockForm;
+import com.n1t3slay3r.empirecraft.Listeners.OnEntityExplode;
+import com.n1t3slay3r.empirecraft.Listeners.OnLeavesDecay;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerBreakBlock;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerBucketEmptyEvent;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerBucketFillEvenet;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerChat;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerInteractBlock;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerJoin;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerMove;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerOpenChest;
+import com.n1t3slay3r.empirecraft.Listeners.OnPlayerPlaceBlock;
+import com.n1t3slay3r.empirecraft.Listeners.OnPvP;
+import com.n1t3slay3r.empirecraft.Listeners.OnSmeltItem;
+import com.n1t3slay3r.empirecraft.MainCommands.*;
+import com.n1t3slay3r.empirecraft.Uncategorized.*;
+import com.n1t3slay3r.empirecraft.ManageCommands.*;
+import com.n1t3slay3r.empirecraft.MemberCommands.*;
+import com.n1t3slay3r.empirecraft.OwnerCommands.*;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -40,25 +61,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 @SuppressWarnings("unchecked")
 public class Main extends JavaPlugin {
 
-    private static final Logger log = Logger.getLogger("Minecraft");
     public static Economy econ = null;
     public static Permission perms = null;
     public static Chat chat = null;
-    private static int disabled = 0;
-
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            disabled = 1;
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            disabled = 2;
-            return false;
-        }
-        econ = rsp.getProvider();
-        return econ != null;
-    }
 
     /*private boolean setupChat() {
      RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
@@ -84,6 +89,40 @@ public class Main extends JavaPlugin {
     public static Map<String, HashMap<String, HashMap>> serverdata = new HashMap<>();
     public static Map<String, HashMap> tempHashMap = new HashMap<>();
 
+    private static int disabled = 0;
+    private static final Logger log = Logger.getLogger("Minecraft");
+
+    @Override
+    public void onDisable() {
+        switch (disabled) {
+            case 0:
+                OnPluginSave.onPluginSave();
+                break;
+            case 1:
+                log.severe(String.format(ChatColor.DARK_RED + "[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
+                break;
+            case 2:
+                log.severe(String.format(ChatColor.DARK_RED + "[%s] - Disabled due to no economy system hooked ion with vault (Ex. Essentials or iConomy)", getDescription().getName()));
+                break;
+            default:
+                break;
+        }
+    }
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            disabled = 1;
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            disabled = 2;
+            return false;
+        }
+        econ = rsp.getProvider();
+        return econ != null;
+    }
+
     @Override
     public void onEnable() {
         if (!setupEconomy()) {
@@ -92,6 +131,7 @@ public class Main extends JavaPlugin {
         }
         //setupPermissions();
         //setupChat();
+        System.out.println("REACHEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
         pluginFolder = getDataFolder();
         Config = new YamlConfiguration();
         Villages = new YamlConfiguration();
@@ -255,21 +295,30 @@ public class Main extends JavaPlugin {
             });
         }
         RepetitiveMethods.test(this);
-        getServer().getPluginManager().registerEvents(new Listeners(), this);
+        getServer().getPluginManager().registerEvents(new OnArrowHit(), this);
+        getServer().getPluginManager().registerEvents(new OnBlockBurn(), this);
+        getServer().getPluginManager().registerEvents(new OnBlockForm(), this);
+        getServer().getPluginManager().registerEvents(new OnBlockIgnite(), this);
+        getServer().getPluginManager().registerEvents(new OnBlockMove(), this);
+        getServer().getPluginManager().registerEvents(new OnCraftItem(), this);
+        getServer().getPluginManager().registerEvents(new OnCreatureSpawn(), this);
+        getServer().getPluginManager().registerEvents(new OnEntityBlockForm(), this);
+        getServer().getPluginManager().registerEvents(new OnEntityExplode(), this);
+        getServer().getPluginManager().registerEvents(new OnLeavesDecay(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerBreakBlock(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerBucketEmptyEvent(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerBucketFillEvenet(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerChat(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerInteractBlock(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerMove(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerOpenChest(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerPlaceBlock(), this);
+        getServer().getPluginManager().registerEvents(new OnPvP(), this);
+        getServer().getPluginManager().registerEvents(new OnSmeltItem(), this);
         if (Config.getString("Global Settings.Auto Update Notifier").equals("on")) {
             System.out.println("Checking for updates on bukkit");
             Update updateCheck = new Update(80075, "ed2919ef1dcca33b92ac5571e73d53ba1e474a4e");
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        if (disabled == 0) {
-            MainConversions.onPluginSave();
-        } else if (disabled == 1) {
-            log.severe(String.format(ChatColor.DARK_RED + "[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
-        } else if (disabled == 2) {
-            log.severe(String.format(ChatColor.DARK_RED + "[%s] - Disabled due to no economy system hooked ion with vault (Ex. Essentials or iConomy)", getDescription().getName()));
         }
     }
 
@@ -283,7 +332,7 @@ public class Main extends JavaPlugin {
                         switch (args[0]) {
                             case "create":
                                 if (args.length > 2) {
-                                    MainCommands.Create(sender, player, args);
+                                    Create.Create(sender, player, args);
                                 } else {
                                     sender.sendMessage(ChatColor.DARK_GREEN + "/ec create village <name>" + ChatColor.GREEN + " Creates a village where you are the leader for $" + ChatColor.DARK_GREEN + Config.getInt("Village Settings.Creation Cost") + ChatColor.DARK_GREEN + "\n/ec create empire <player> <player village name>:<empire name>" + ChatColor.GREEN + " Player=a manager of your village whose is to become the new owner of the second village making you an empire. Cost to do so: $" + ChatColor.DARK_GREEN + Config.getInt("Empire Settings.Creation Cost"));
                                 }
@@ -291,15 +340,15 @@ public class Main extends JavaPlugin {
                             case "join":
                                 if (args.length >= 2) {
                                     if (player.hasPermission("empirecraft.join")) {
-                                        if (!MainConversions.isPartInHashMap(serverdata.get("playerdata"), player.getUniqueId().toString(), "village")) {
+                                        if (!QuickChecks.isPartInHashMap(serverdata.get("playerdata"), player.getUniqueId().toString(), "village")) {
                                             tempstring = "";
                                             for (int i = 1; i < args.length; i++) {
                                                 tempstring += args[i] + " ";
                                             }
                                             tempstring = tempstring.trim();
                                             if (serverdata.get("villages").containsKey(tempstring)) {
-                                                if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "app", player.getUniqueId().toString())) {
-                                                    if (MainConversions.isPlayerInArrayList(serverdata.get("playerdata").get(player.getUniqueId().toString()), "vii", tempstring)) {
+                                                if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "app", player.getUniqueId().toString())) {
+                                                    if (QuickChecks.isPlayerInArrayList(serverdata.get("playerdata").get(player.getUniqueId().toString()), "vii", tempstring)) {
                                                         serverdata.get("playerdata").get(player.getUniqueId().toString()).remove("vii");
                                                         serverdata.get("playerdata").get(player.getUniqueId().toString()).put("village", tempstring);
                                                         sender.sendMessage(ChatColor.BLUE + "You have joined the village " + ChatColor.AQUA + tempstring);
@@ -324,8 +373,8 @@ public class Main extends JavaPlugin {
                                                             serverdata.get("villages").get(tempstring).put("mem", new ArrayList<>());
                                                         }
                                                         ((ArrayList) serverdata.get("villages").get(tempstring).get("mem")).add(player.getUniqueId().toString());
-                                                    } else if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "app", player.getUniqueId().toString())) {
-                                                        MainCommands.Apply(tempstring, player.getUniqueId().toString());
+                                                    } else if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "app", player.getUniqueId().toString())) {
+                                                        Apply.Apply(tempstring, player.getUniqueId().toString());
                                                     } else {
                                                         sender.sendMessage(ChatColor.DARK_RED + "You have already sent a request to join " + ChatColor.RED + tempstring);
                                                     }
@@ -384,13 +433,13 @@ public class Main extends JavaPlugin {
                                         for (int z = -4; z < 5; z++) {
                                             for (int x = -8; x < 9; x++) {
                                                 if (x != 0 || z != 0) {
-                                                    if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), X + x, Z + z, "cla")) {
+                                                    if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), X + x, Z + z, "cla")) {
                                                         if (serverdata.get("playerdata").containsKey(player.getUniqueId().toString())) {
                                                             if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("cla").equals((String) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village"))) {
                                                                 tempstring += ChatColor.AQUA;
-                                                            } else if (MainConversions.isPartInHashMap(serverdata.get("villages").get((String) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village")), "ene", (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("cla")).toString())) {
+                                                            } else if (QuickChecks.isPartInHashMap(serverdata.get("villages").get((String) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village")), "ene", (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("cla")).toString())) {
                                                                 tempstring += ChatColor.RED;
-                                                            } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get((String) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village")), "all", (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("cla")).toString())) {
+                                                            } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get((String) serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village")), "all", (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("cla")).toString())) {
                                                                 tempstring += ChatColor.GREEN;
                                                             } else {
                                                                 tempstring += ChatColor.YELLOW;
@@ -398,7 +447,7 @@ public class Main extends JavaPlugin {
                                                         } else {
                                                             tempstring += ChatColor.YELLOW;
                                                         }
-                                                        if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), X + x, Z + z, "str")) {
+                                                        if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), X + x, Z + z, "str")) {
                                                             String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(X + x)).get(Z + z)).get("str").toString();
                                                             if (Config.isConfigurationSection("Village Ranks." + structure)) {
                                                                 tempstring += "R ";
@@ -448,7 +497,7 @@ public class Main extends JavaPlugin {
                                 if (args.length == 1) {
                                     if (player.hasPermission("empirecraft.info")) {
                                         tempstring = ChatColor.BLUE + "Chunk " + ChatColor.AQUA + player.getLocation().getChunk().getX() + ChatColor.BLUE + ", " + ChatColor.AQUA + player.getLocation().getChunk().getZ() + ChatColor.BLUE + "\n";
-                                        if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                        if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                             tempstring += ChatColor.BLUE + "Owned By: " + ChatColor.AQUA + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla");
                                             if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("str")) {
                                                 tempstring += ChatColor.BLUE + "\nStructure Type: " + ChatColor.AQUA + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str");
@@ -550,7 +599,7 @@ public class Main extends JavaPlugin {
                                                 break;
                                             case "village":
                                                 if (player.hasPermission("empirecraft.chatchannel.village")) {
-                                                    if (MainConversions.isPlayerInVillage(player.getUniqueId())) {
+                                                    if (QuickChecks.isPlayerInVillage(player.getUniqueId())) {
                                                         tempHashMap.get("chc").put(player.getUniqueId().toString(), "val");
                                                         sender.sendMessage(ChatColor.BLUE + "Your chat channel has been set to village, meaning you can only communicate with the members of your current village");
                                                     } else {
@@ -562,7 +611,7 @@ public class Main extends JavaPlugin {
                                                 break;
                                             case "villagemanagers":
                                                 if (player.hasPermission("empirecraft.chatchannel.villagemanagers")) {
-                                                    if (MainConversions.isPlayerInVillage(player.getUniqueId())) {
+                                                    if (QuickChecks.isPlayerInVillage(player.getUniqueId())) {
                                                         tempHashMap.get("chc").put(player.getUniqueId().toString(), "vma");
                                                         sender.sendMessage(ChatColor.BLUE + "Your chat channel has been set to villagemanagers, meaning you can only communicate with otherts of your appropriate rank");
                                                     } else {
@@ -574,7 +623,7 @@ public class Main extends JavaPlugin {
                                                 break;
                                             case "villageallies":
                                                 if (player.hasPermission("empirecraft.chatchannel.villageallies")) {
-                                                    if (MainConversions.isPlayerInVillage(player.getUniqueId())) {
+                                                    if (QuickChecks.isPlayerInVillage(player.getUniqueId())) {
                                                         tempHashMap.get("chc").put(player.getUniqueId().toString(), "valy");
                                                         sender.sendMessage(ChatColor.BLUE + "Your chat channel has been set to villageallies, meaning you can only communicate with players of your village or an allied village");
                                                     } else {
@@ -586,7 +635,7 @@ public class Main extends JavaPlugin {
                                                 break;
                                             case "empire":
                                                 if (player.hasPermission("empirecraft.chatchannel.empire")) {
-                                                    if (MainConversions.isPlayerInVillage(player.getUniqueId())) {
+                                                    if (QuickChecks.isPlayerInVillage(player.getUniqueId())) {
                                                         if (serverdata.get("villages").get(serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village").toString()).containsKey("emp")) {
                                                             tempHashMap.get("chc").put(player.getUniqueId().toString(), "eal");
                                                             sender.sendMessage(ChatColor.BLUE + "Your chat channel has been set to global, meaning you can only communicate with players villages within the empire");
@@ -602,7 +651,7 @@ public class Main extends JavaPlugin {
                                                 break;
                                             case "empireallies":
                                                 if (player.hasPermission("empirecraft.chatchannel.empireallies")) {
-                                                    if (MainConversions.isPlayerInVillage(player.getUniqueId())) {
+                                                    if (QuickChecks.isPlayerInVillage(player.getUniqueId())) {
                                                         if (serverdata.get("villages").get(serverdata.get("playerdata").get(player.getUniqueId().toString()).get("village").toString()).containsKey("emp")) {
                                                             tempHashMap.get("chc").put(player.getUniqueId().toString(), "ealy");
                                                             sender.sendMessage(ChatColor.BLUE + "Your chat channel has been set to global, meaning you can only communicate with players in your empire or an allied empire");
@@ -651,7 +700,7 @@ public class Main extends JavaPlugin {
                                         case "createstructure":
                                             if (args.length >= 5) {
                                                 if (player.hasPermission("empirecraft.admin.createstructure")) {
-                                                    if (MainConversions.isInteger(args[2])) {
+                                                    if (QuickChecks.isInteger(args[2])) {
                                                         if (Integer.parseInt(args[2]) > 0) {
                                                             if ((Integer.parseInt(args[2]) + player.getLocation().getBlockY() - 1) < player.getWorld().getMaxHeight()) {
                                                                 tempstring = "";
@@ -885,7 +934,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.retire")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
@@ -899,7 +948,7 @@ public class Main extends JavaPlugin {
                                                                         Bukkit.getPlayer(args[2]).sendMessage(ChatColor.DARK_PURPLE + "You have been promoted to a manager");
                                                                     }
                                                                     sender.sendMessage(ChatColor.BLUE + "You have successfully given " + ChatColor.AQUA + args[2] + ChatColor.BLUE + " leadership to the village, and you have been set to a village manager");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).add(playername);
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
@@ -929,9 +978,9 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.promote")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.RED + args[2] + ChatColor.DARK_RED + " is already a manager of the village");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     if (serverdata.get("villages").get(playervillage).get("man") == null) {
                                                                         serverdata.get("villages").get(playervillage).put("man", new ArrayList<>());
                                                                     }
@@ -963,9 +1012,9 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.demote")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.DARK_RED + args[2] + " is already a member of the village");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     if (serverdata.get("villages").get(playervillage).get("mem") == null) {
                                                                         serverdata.get("villages").get(playervillage).put("mem", new ArrayList<>());
                                                                     }
@@ -996,12 +1045,12 @@ public class Main extends JavaPlugin {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).containsKey("emp")) {
                                                                     if (!serverdata.get("empires").get(serverdata.get("villages").get(playervillage).get("emp").toString()).get("mav").equals(playervillage)) {
-                                                                        OwnerCommands.Abandon(playervillage, playername, player);
+                                                                        Abandon.Abandon(playervillage, playername, player);
                                                                     } else {
                                                                         sender.sendMessage(ChatColor.DARK_RED + "You cannot abandon your village when you are the owner of an empire, you must first either abandon your empire or retire a new leader village to it");
                                                                     }
                                                                 } else {
-                                                                    OwnerCommands.Abandon(playervillage, playername, player);
+                                                                    Abandon.Abandon(playervillage, playername, player);
                                                                 }
                                                             } else {
                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are not the owner of this village!");
@@ -1017,7 +1066,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.owner.settax")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isInteger(args[2])) {
+                                                                if (QuickChecks.isInteger(args[2])) {
                                                                     serverdata.get("villages").get(playervillage).put("tax", args[2]);
                                                                     sender.sendMessage(ChatColor.BLUE + "Daily tax has been set to $" + ChatColor.AQUA + args[2] + ChatColor.BLUE + " for all village members and manages");
                                                                 } else {
@@ -1060,7 +1109,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 4) {
                                                         if (player.hasPermission("empirecraft.village.owner.togglesetting.*")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                OwnerCommands.togglesetting(playervillage, sender, args);
+                                                                ToggleSetting.ToggleSetting(playervillage, sender, args);
                                                             } else {
                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are not the owner of this village!");
                                                             }
@@ -1140,7 +1189,7 @@ public class Main extends JavaPlugin {
                                                                                             if (!((HashMap) serverdata.get("villages").get(playervillage).get("ene")).containsKey(tempstring)) {
                                                                                                 if (!serverdata.get("villages").get(tempstring).containsKey("inv")) {
                                                                                                     if ((Integer) serverdata.get("villages").get(tempstring).get("plc") == 0) {
-                                                                                                        DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                                        War.War("villages", playervillage, tempstring, playername);
                                                                                                     } else {
                                                                                                         sender.sendMessage(ChatColor.DARK_RED + "You cannot declare war on " + ChatColor.RED + tempstring + ChatColor.DARK_RED + " until the create or initiate the creation of a rank structure");
                                                                                                     }
@@ -1151,12 +1200,12 @@ public class Main extends JavaPlugin {
                                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are already at war with " + ChatColor.RED + tempstring);
                                                                                             }
                                                                                         } else {
-                                                                                            DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                            War.War("villages", playervillage, tempstring, playername);
                                                                                         }
                                                                                     } else {
                                                                                         serverdata.get("villages").get(playervillage).remove("inv");
                                                                                         sender.sendMessage(ChatColor.DARK_RED + "Your village creation immunity has been removed for declaring war");
-                                                                                        DiplomacyCommands.War("villages", playervillage, tempstring, playername);
+                                                                                        War.War("villages", playervillage, tempstring, playername);
                                                                                     }
                                                                                 } else {
                                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot declare war on yourself!");
@@ -1185,9 +1234,9 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (MainConversions.isPartInHashMap(serverdata.get("villages").get(tempstring), "ene", playervillage)) {
-                                                                                        if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
-                                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "trr", playervillage)) {
+                                                                                    if (QuickChecks.isPartInHashMap(serverdata.get("villages").get(tempstring), "ene", playervillage)) {
+                                                                                        if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
+                                                                                            if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "trr", playervillage)) {
                                                                                                 if (serverdata.get("villages").get(tempstring).get("trr") == null) {
                                                                                                     serverdata.get("villages").get(tempstring).put("trr", new ArrayList<>());
                                                                                                 }
@@ -1200,7 +1249,7 @@ public class Main extends JavaPlugin {
                                                                                                 sender.sendMessage(ChatColor.DARK_RED + "You have already requested a truce with " + ChatColor.RED + tempstring);
                                                                                             }
                                                                                         } else {
-                                                                                            DiplomacyCommands.Truce("villages", playervillage, tempstring, playername);
+                                                                                            Truce.Truce("villages", playervillage, tempstring, playername);
                                                                                         }
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.DARK_RED + "You cannot request to have a truce when your not at war with " + ChatColor.RED + tempstring);
@@ -1232,10 +1281,10 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (!MainConversions.isPartInHashMap(serverdata.get("villages").get(tempstring), "ene", playervillage)) {
-                                                                                        if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
-                                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
-                                                                                                if (!MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "alr", playervillage)) {
+                                                                                    if (!QuickChecks.isPartInHashMap(serverdata.get("villages").get(tempstring), "ene", playervillage)) {
+                                                                                        if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
+                                                                                            if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
+                                                                                                if (!QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "alr", playervillage)) {
                                                                                                     if (serverdata.get("villages").get(tempstring).get("alr") == null) {
                                                                                                         serverdata.get("villages").get(tempstring).put("alr", new ArrayList<>());
                                                                                                     }
@@ -1248,7 +1297,7 @@ public class Main extends JavaPlugin {
                                                                                                     sender.sendMessage(ChatColor.DARK_RED + "You have already requested an alliance with " + ChatColor.RED + tempstring);
                                                                                                 }
                                                                                             } else {
-                                                                                                DiplomacyCommands.Alliance("villages", playervillage, tempstring, playername);
+                                                                                                Alliance.Alliance("villages", playervillage, tempstring, playername);
                                                                                             }
                                                                                         } else {
                                                                                             sender.sendMessage(ChatColor.DARK_RED + "You already have an alliance with " + ChatColor.RED + tempstring);
@@ -1285,9 +1334,9 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
-                                                                                        if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
-                                                                                            DiplomacyCommands.Neutralize("villages", playervillage, tempstring, playername);
+                                                                                    if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
+                                                                                        if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "all", playervillage)) {
+                                                                                            Neutralize.Neutralize("villages", playervillage, tempstring, playername);
                                                                                         } else {
                                                                                             sender.sendMessage(ChatColor.DARK_RED + "You can only neutralize allys");
                                                                                         }
@@ -1321,10 +1370,10 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
-                                                                                        DiplomacyCommands.Alliance("villages", playervillage, tempstring, playername);
-                                                                                    } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
-                                                                                        DiplomacyCommands.Truce("villages", playervillage, tempstring, playername);
+                                                                                    if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
+                                                                                        Alliance.Alliance("villages", playervillage, tempstring, playername);
+                                                                                    } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
+                                                                                        Truce.Truce("villages", playervillage, tempstring, playername);
                                                                                     } else {
                                                                                         sender.sendMessage(ChatColor.RED + tempstring + ChatColor.DARK_RED + " currently has no requests of you");
                                                                                     }
@@ -1332,13 +1381,13 @@ public class Main extends JavaPlugin {
                                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot accept requests from yourself!");
                                                                                 }
                                                                             } else {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "alr", tempstring)) {
                                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("alr")).remove(tempstring);
                                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("alr")).isEmpty()) {
                                                                                         serverdata.get("villages").get(playervillage).remove("alr");
                                                                                     }
                                                                                 }
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "trr", tempstring)) {
                                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("trr")).remove(tempstring);
                                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("trr")).isEmpty()) {
                                                                                         serverdata.get("villages").get(playervillage).remove("trr");
@@ -1367,7 +1416,7 @@ public class Main extends JavaPlugin {
                                                                             tempstring = tempstring.trim();
                                                                             if (serverdata.get("villages").containsKey(tempstring)) {
                                                                                 if (!playervillage.equals(tempstring)) {
-                                                                                    if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "alr", tempstring)) {
+                                                                                    if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "alr", tempstring)) {
                                                                                         ((ArrayList) serverdata.get("villages").get(playervillage).get("alr")).remove(tempstring);
                                                                                         if (((ArrayList) serverdata.get("villages").get(playervillage).get("alr")).isEmpty()) {
                                                                                             serverdata.get("villages").get(playervillage).remove("alr");
@@ -1376,7 +1425,7 @@ public class Main extends JavaPlugin {
                                                                                         if (Bukkit.getOfflinePlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).isOnline()) {
                                                                                             Bukkit.getPlayer(UUID.fromString(serverdata.get("villages").get(tempstring).get("own").toString())).sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.DARK_PURPLE + ", owner of " + ChatColor.LIGHT_PURPLE + playervillage + ChatColor.DARK_PURPLE + ", has denied your alliance request");
                                                                                         }
-                                                                                    } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "trr", tempstring)) {
+                                                                                    } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(tempstring), "trr", tempstring)) {
                                                                                         ((ArrayList) serverdata.get("villages").get(playervillage).get("trr")).remove(tempstring);
                                                                                         if (((ArrayList) serverdata.get("villages").get(playervillage).get("trr")).isEmpty()) {
                                                                                             serverdata.get("villages").get(playervillage).remove("trr");
@@ -1409,7 +1458,7 @@ public class Main extends JavaPlugin {
                                                                     if (player.hasPermission("empirecraft.village.owner.diplomacy.requestlist")) {
                                                                         if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                             if (serverdata.get("villages").get(playervillage).get("alr") != null || serverdata.get("villages").get(playervillage).get("trr") != null) {
-                                                                                DiplomacyCommands.RequestList("villages", playervillage, sender);
+                                                                                RequestList.RequestList("villages", playervillage, sender);
                                                                             } else {
                                                                                 sender.sendMessage(ChatColor.DARK_RED + "There are currently no diplomacy requests for the village");
                                                                             }
@@ -1465,13 +1514,13 @@ public class Main extends JavaPlugin {
                                                 case "invite":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.invite")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 Player tempplayer = Bukkit.getOfflinePlayer(args[2]).getPlayer();
                                                                 if (tempplayer != null) {
                                                                     if (serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()) != null) {
                                                                         if (serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()).get("vii") != null) {
-                                                                            if (!MainConversions.isPlayerInArrayList(serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()), "vii", playervillage)) {
-                                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "app", tempplayer.getUniqueId().toString())) {
+                                                                            if (!QuickChecks.isPlayerInArrayList(serverdata.get("playerdata").get(tempplayer.getUniqueId().toString()), "vii", playervillage)) {
+                                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "app", tempplayer.getUniqueId().toString())) {
                                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(tempplayer.getUniqueId().toString());
                                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).isEmpty()) {
                                                                                         serverdata.get("villages").get(playervillage).remove("app");
@@ -1539,7 +1588,7 @@ public class Main extends JavaPlugin {
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.kick")) {
                                                             if (serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("man")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("man");
@@ -1550,7 +1599,7 @@ public class Main extends JavaPlugin {
                                                                     if (tempplayer.isOnline()) {
                                                                         tempplayer.sendMessage(ChatColor.DARK_RED + "You have been kicked from " + ChatColor.RED + playervillage + ChatColor.DARK_RED + " by " + ChatColor.RED + Bukkit.getOfflinePlayer(UUID.fromString(playername)).getName());
                                                                     }
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
@@ -1564,10 +1613,10 @@ public class Main extends JavaPlugin {
                                                                 } else {
                                                                     sender.sendMessage(ChatColor.RED + args[2] + ChatColor.DARK_RED + " does not exsist in the village database");
                                                                 }
-                                                            } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername)) {
-                                                                if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                            } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername)) {
+                                                                if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     sender.sendMessage(ChatColor.DARK_RED + "You cannot kick " + ChatColor.RED + args[2] + ChatColor.DARK_RED + ", because they are also a manager like yourself");
-                                                                } else if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
+                                                                } else if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "mem", Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                     ((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).isEmpty()) {
                                                                         serverdata.get("villages").get(playervillage).remove("mem");
@@ -1598,7 +1647,7 @@ public class Main extends JavaPlugin {
                                                 case "applications":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.applications")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).get("app") != null) {
                                                                     tempstring = ChatColor.BLUE + "";
                                                                     temparraylist.clear();
@@ -1629,7 +1678,7 @@ public class Main extends JavaPlugin {
                                                 case "accept":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.accept")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).get("app") != null) {
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).contains(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString())) {
                                                                         ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(Bukkit.getOfflinePlayer(args[2]).getUniqueId().toString());
@@ -1681,7 +1730,7 @@ public class Main extends JavaPlugin {
                                                 case "deny":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.deny")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).get("app") != null) {
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("app")).contains(args[2])) {
                                                                         ((ArrayList) serverdata.get("villages").get(playervillage).get("app")).remove(args[2]);
@@ -1710,8 +1759,8 @@ public class Main extends JavaPlugin {
                                                 case "withdraw":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.withdraw")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isInteger(args[2])) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isInteger(args[2])) {
                                                                     if (((Integer) serverdata.get("villages").get(playervillage).get("vau")) >= Integer.parseInt(args[2])) {
                                                                         serverdata.get("villages").get(playervillage).put("vau", ((Integer) serverdata.get("villages").get(playervillage).get("vau")) - Integer.parseInt(args[2]));
                                                                         econ.depositPlayer(player, Integer.parseInt(args[2]));
@@ -1737,13 +1786,13 @@ public class Main extends JavaPlugin {
                                                 case "claim":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.claim")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 (Config.getConfigurationSection("Village Ranks").getKeys(false)).stream().filter((o) -> (serverdata.get("villages").get(playervillage).get("vir").toString().equals(o))).forEach((o) -> {
                                                                     if (((int) serverdata.get("villages").get(playervillage).get("plc")) < Config.getInt("Village Ranks." + o + ".Max Plots")) {
-                                                                        if (!MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                                        if (!QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                             if (getServer().getPluginManager().getPlugin("WorldGuard") == null) {
                                                                                 if (((int) serverdata.get("villages").get(playervillage).get("plc")) != 0) {
-                                                                                    if (MainConversions.isNearByVillageYours(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), playervillage)) {
+                                                                                    if (QuickChecks.isNearByVillageYours(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), playervillage)) {
                                                                                         serverdata.get("villages").get(playervillage).replace("plc", ((int) serverdata.get("villages").get(playervillage).get("plc")) + 1);
                                                                                         if (serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX()) == null) {
                                                                                             serverdata.get("worldmap").get(player.getWorld().getUID().toString()).put(player.getLocation().getChunk().getX(), new HashMap<>());
@@ -1781,7 +1830,7 @@ public class Main extends JavaPlugin {
                                                                                 }
                                                                                 if (cont) {
                                                                                     if (((int) serverdata.get("villages").get(playervillage).get("plc")) != 0) {
-                                                                                        if (MainConversions.isNearByVillageYours(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), playervillage)) {
+                                                                                        if (QuickChecks.isNearByVillageYours(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), playervillage)) {
                                                                                             serverdata.get("villages").get(playervillage).replace("plc", ((int) serverdata.get("villages").get(playervillage).get("plc")) + 1);
                                                                                             if (serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX()) == null) {
                                                                                                 serverdata.get("worldmap").get(player.getWorld().getUID().toString()).put(player.getLocation().getChunk().getX(), new HashMap<>());
@@ -1819,8 +1868,8 @@ public class Main extends JavaPlugin {
                                                 case "unclaim":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.unclaim")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (!((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("str")) {
                                                                             serverdata.get("villages").get(playervillage).replace("plc", ((int) serverdata.get("villages").get(playervillage).get("plc")) - 1);
@@ -1875,8 +1924,8 @@ public class Main extends JavaPlugin {
                                                         }
                                                         tempstring = tempstring.trim();
                                                         if (player.hasPermission("empirecraft.village.manage.build.*") || player.hasPermission("empirecraft.village.manage.build." + tempstring)) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                ManageCommands.buildInitiation(sender, player, playervillage, args);
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                BuildInitiation.BuildInitiation(sender, player, playervillage, args);
                                                             } else {
                                                                 sender.sendMessage(ChatColor.DARK_RED + "You are not a manager of this village!");
                                                             }
@@ -1890,7 +1939,7 @@ public class Main extends JavaPlugin {
                                                 case "buildlist":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.buildlist")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 tempstring = ChatColor.BLUE + "Village Ranks\n" + ChatColor.AQUA;
                                                                 temparraylist.clear();
                                                                 temparraylist.addAll(Config.getConfigurationSection("Village Ranks").getKeys(false));
@@ -1954,7 +2003,7 @@ public class Main extends JavaPlugin {
                                                 case "buildinfo":
                                                     if (args.length > 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.buildlist")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 tempstring = "";
                                                                 for (int i = 2; i < args.length; i++) {
                                                                     tempstring += args[i] + " ";
@@ -2078,13 +2127,13 @@ public class Main extends JavaPlugin {
                                                 case "takedown":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.takedown")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "str")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "str")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str").toString();
                                                                         if (!Config.isConfigurationSection("Village Ranks." + structure)) {
                                                                             Integer x = player.getLocation().getChunk().getX(), z = player.getLocation().getChunk().getZ();
-                                                                            if (MainConversions.isMultiType(structure)) {
+                                                                            if (QuickChecks.isMultiType(structure)) {
                                                                                 tempfile = new File(structureFolder, structure + ".yml");
                                                                                 FileConfiguration tempyaml = new YamlConfiguration();
                                                                                 try {
@@ -2134,11 +2183,11 @@ public class Main extends JavaPlugin {
                                                 case "forsale":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.manage.forsale")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (!((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("playerplot")) {
-                                                                            if (MainConversions.isInteger(args[2])) {
+                                                                            if (QuickChecks.isInteger(args[2])) {
                                                                                 ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).put("forsale", Integer.parseInt(args[2]));
                                                                                 sender.sendMessage(ChatColor.BLUE + "You have successfully put the chunk of land at X " + ChatColor.AQUA + player.getLocation().getChunk().getX() + ChatColor.BLUE + ", Z " + ChatColor.AQUA + player.getLocation().getChunk().getZ() + ChatColor.BLUE + " for sale at a price of $" + ChatColor.AQUA + args[2]);
                                                                             } else {
@@ -2168,8 +2217,8 @@ public class Main extends JavaPlugin {
                                                 case "notforsale":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.notforsale")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("forsale")) {
                                                                             ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).remove("forsale");
@@ -2196,8 +2245,8 @@ public class Main extends JavaPlugin {
                                                 case "revokeplot":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.revokeplot")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("playerplot")) {
                                                                             if (Bukkit.getOfflinePlayer(UUID.fromString(((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("playerplot").toString())).isOnline()) {
@@ -2227,8 +2276,8 @@ public class Main extends JavaPlugin {
                                                 case "sethome":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.sethome")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
-                                                                if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla") && ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("str")) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                                if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla") && ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("str")) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                         if (Config.isConfigurationSection("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str"))) {
                                                                             serverdata.get("villages").get(playervillage).replace("rcx", player.getLocation().getBlockX());
@@ -2257,7 +2306,7 @@ public class Main extends JavaPlugin {
                                                 case "viewdebt":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.manage.viewdebt")) {
-                                                            if (MainConversions.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
+                                                            if (QuickChecks.isPlayerInArrayList(serverdata.get("villages").get(playervillage), "man", playername) || serverdata.get("villages").get(playervillage).get("own").equals(playername)) {
                                                                 if (serverdata.get("villages").get(playervillage).containsKey("debt")) {
                                                                     tempstring = "";
                                                                     for (String p : ((HashMap<String, Integer>) serverdata.get("villages").get(playervillage).get("debt")).keySet()) {
@@ -2368,11 +2417,11 @@ public class Main extends JavaPlugin {
                                                             if (serverdata.get("villages").get(playervillage).get("own") != playername) {
                                                                 if (serverdata.get("villages").get(playervillage).get("man") != null) {
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("man")).contains(playername)) {
-                                                                        MemberCommands.Leave(playervillage, playername, player, "man");
+                                                                        Leave.Leave(playervillage, playername, player, "man");
                                                                     }
                                                                 } else if (serverdata.get("villages").get(playervillage).get("mem") != null) {
                                                                     if (((ArrayList) serverdata.get("villages").get(playervillage).get("mem")).contains(playername)) {
-                                                                        MemberCommands.Leave(playervillage, playername, player, "mem");
+                                                                        Leave.Leave(playervillage, playername, player, "mem");
                                                                     } else {
                                                                         sender.sendMessage(ChatColor.DARK_RED + "You cannot leave the village as its owner, you must either abandon it or retire another person to owner");
                                                                     }
@@ -2392,7 +2441,7 @@ public class Main extends JavaPlugin {
                                                 case "deposit":
                                                     if (args.length == 3) {
                                                         if (player.hasPermission("empirecraft.village.member.deposit")) {
-                                                            if (MainConversions.isInteger(args[2])) {
+                                                            if (QuickChecks.isInteger(args[2])) {
                                                                 if (econ.has(player, Integer.parseInt(args[2]))) {
                                                                     serverdata.get("villages").get(playervillage).put("vau", ((Integer) serverdata.get("villages").get(playervillage).get("vau")) + Integer.parseInt(args[2]));
                                                                     econ.withdrawPlayer(player, Integer.parseInt(args[2]));
@@ -2479,7 +2528,7 @@ public class Main extends JavaPlugin {
                                                 case "setperm":
                                                     if (args.length == 5) {
                                                         if (player.hasPermission("empirecraft.village.member.setperm")) {
-                                                            MemberCommands.Setperm(playername, sender, args);
+                                                            SetPerm.SetPerm(playername, sender, args);
                                                         } else {
                                                             sender.sendMessage(ChatColor.DARK_RED + "You lack the permissions to use this command");
                                                         }
@@ -2565,7 +2614,7 @@ public class Main extends JavaPlugin {
                                                 case "buyplot":
                                                     if (args.length == 2) {
                                                         if (player.hasPermission("empirecraft.village.member.buyplot")) {
-                                                            if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
+                                                            if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "cla")) {
                                                                 if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("cla").equals(playervillage)) {
                                                                     if (((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).containsKey("forsale")) {
                                                                         if (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("forsale")) <= econ.getBalance(player)) {
@@ -2705,7 +2754,7 @@ public class Main extends JavaPlugin {
                                                                 tempstring += args[i] + " ";
                                                             }
                                                             tempstring = tempstring.trim();
-                                                            if (MainConversions.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "pro")) {
+                                                            if (QuickChecks.isWorldChunkClaimed(serverdata.get("worldmap").get(player.getWorld().getUID().toString()), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), "pro")) {
                                                                 if (Config.getConfigurationSection("Village Structures." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).get("str") + ".Productions").getKeys(false).contains(tempstring)) {
                                                                     ((HashMap) ((HashMap) serverdata.get("worldmap").get(player.getWorld().getUID().toString()).get(player.getLocation().getChunk().getX())).get(player.getLocation().getChunk().getZ())).replace("pro", tempstring);
                                                                     sender.sendMessage(ChatColor.BLUE + "You have successfully set the structures production to " + ChatColor.AQUA + tempstring);

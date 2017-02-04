@@ -5,8 +5,9 @@
  */
 package com.n1t3slay3r.empirecraft.main;
 
-import com.n1t3slay3r.empirecraft.Commands.MainConversions;
-import com.n1t3slay3r.empirecraft.Commands.OwnerCommands;
+import com.n1t3slay3r.empirecraft.Uncategorized.QuickChecks;
+import com.n1t3slay3r.empirecraft.OwnerCommands.*;
+import com.n1t3slay3r.empirecraft.Uncategorized.OnPluginSave;
 import static com.n1t3slay3r.empirecraft.main.Main.Config;
 import static com.n1t3slay3r.empirecraft.main.Main.econ;
 import static com.n1t3slay3r.empirecraft.main.Main.serverdata;
@@ -105,7 +106,7 @@ public class RepetitiveMethods {
                                     }
                                     nx += ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) % 16;
                                     nz += (((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) / 16) % 16;
-                                    if (!MainConversions.isMultiType(structure)) {
+                                    if (!QuickChecks.isMultiType(structure)) {
                                         ny -= ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cle")) / 256;
                                         do {
                                             nx++;
@@ -334,7 +335,7 @@ public class RepetitiveMethods {
                                     String structure = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str").toString();
                                     tMap.clear();
                                     Boolean rage = false;
-                                    if (!MainConversions.isMultiType(structure)) {
+                                    if (!QuickChecks.isMultiType(structure)) {
                                         for (String sy : tempyaml.getConfigurationSection("Scematic").getKeys(false)) {
                                             for (String sx : tempyaml.getConfigurationSection("Scematic." + sy).getKeys(false)) {
                                                 if (tempyaml.getConfigurationSection("Scematic." + sy + "." + sx).getKeys(false).size() + t1 < icon) {
@@ -933,7 +934,7 @@ public class RepetitiveMethods {
                                                 ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).replace("hp", ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) + Config.getInt("Village Ranks." + ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("str") + ".Block Hp." + nmat));
                                             }
                                         }
-                                        if (!MainConversions.isMultiType(structure)) {
+                                        if (!QuickChecks.isMultiType(structure)) {
                                             Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1).setType(mat);
                                             if (((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString().equalsIgnoreCase("n")) {
                                                 BuildRotationCheck.Set(((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("dir").toString(), Bukkit.getWorld(UUID.fromString(w)).getBlockAt((Integer) x * 16 + nx - 1, ny + ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("base")) - 2, (Integer) z * 16 + nz - 1), mat, ny, xx, zz, tempyaml);
@@ -1145,9 +1146,9 @@ public class RepetitiveMethods {
                                 if (Config.getString("Village Structures." + structure + ".Type").equals("Archer")) {
                                     String village = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString();
                                     tempplist.clear();
-                                    Bukkit.getWorld(UUID.fromString(w)).getPlayers().stream().filter((p) -> (abs(p.getLocation().getChunk().getX() + p.getLocation().getChunk().getZ() - (Integer) x - (Integer) z) <= Config.getInt("Village Structures." + structure + ".Range"))).filter((p) -> (!p.isDead() && MainConversions.isPlayerInVillage(p.getUniqueId()))).forEach((p) -> {
+                                    Bukkit.getWorld(UUID.fromString(w)).getPlayers().stream().filter((p) -> (abs(p.getLocation().getChunk().getX() + p.getLocation().getChunk().getZ() - (Integer) x - (Integer) z) <= Config.getInt("Village Structures." + structure + ".Range"))).filter((p) -> (!p.isDead() && QuickChecks.isPlayerInVillage(p.getUniqueId()))).forEach((p) -> {
                                         String tempvil = serverdata.get("playerdata").get(p.getUniqueId().toString()).get("village").toString();
-                                        if (MainConversions.isPartInHashMap(serverdata.get("villages").get(village), "ene", tempvil) || MainConversions.enemyEmpire(village, tempvil)) {
+                                        if (QuickChecks.isPartInHashMap(serverdata.get("villages").get(village), "ene", tempvil) || QuickChecks.isEnemyEmpire(village, tempvil)) {
                                             tempplist.add(p);
                                         }
                                     });
@@ -1183,7 +1184,7 @@ public class RepetitiveMethods {
                                             }
                                         }
                                     }
-                                } else if (MainConversions.structureIncomeCheck(time, structure, w, x, z) && ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) == Config.getInt("Village Structures." + structure + ".Total Hp")) {
+                                } else if (QuickChecks.structureIncomeCheck(time, structure, w, x, z) && ((Integer) ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("hp")) == Config.getInt("Village Structures." + structure + ".Total Hp")) {
                                     //INCOME TIME FOR STRUCTURES
                                     String village = ((HashMap) ((HashMap) serverdata.get("worldmap").get(w).get(x)).get(z)).get("cla").toString();
                                     if (Config.getString("Village Structures." + structure + ".Type").equals("Normal") || Config.getString("Village Structures." + structure + ".Type").equals("Multi")) {
@@ -1313,7 +1314,7 @@ public class RepetitiveMethods {
             }
             //AUTO SAVE
             if (time % save == 0) {
-                MainConversions.onPluginSave();
+                OnPluginSave.onPluginSave();
             }
             for (String e : serverdata.get("empires").keySet()) {
                 if (time % tax2 == 0) {
@@ -1407,7 +1408,7 @@ public class RepetitiveMethods {
                     }
                     serverdata.get("villages").get(s).put("vau", taxes);
                     if (((Integer) serverdata.get("villages").get(s).get("vau")) < Config.getInt("Village Settings.Debt Before Village Loss")) {
-                        OwnerCommands.Defeated(s, "Taxes");
+                        Defeated.Defeated(s, "Taxes");
                     }
                 }
             }
