@@ -131,7 +131,6 @@ public class Main extends JavaPlugin {
         }
         //setupPermissions();
         //setupChat();
-        System.out.println("REACHEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
         pluginFolder = getDataFolder();
         Config = new YamlConfiguration();
         Villages = new YamlConfiguration();
@@ -717,8 +716,8 @@ public class Main extends JavaPlugin {
                                                                             }
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "normal");
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]));
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);  //Minus 1 is due to standing on the block (ground level)
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             sender.sendMessage(ChatColor.BLUE + "Please right click a block with a " + ChatColor.AQUA + "STICK" + ChatColor.BLUE + " in this structure size to be the main chest. (any items produced or consumed, especially for building the structure will be found/put in here)");
                                                                             break;
@@ -728,7 +727,7 @@ public class Main extends JavaPlugin {
                                                                             }
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "multi");
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]));
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunks", new ArrayList<>());
@@ -741,7 +740,7 @@ public class Main extends JavaPlugin {
                                                                             }
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "camp");
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]));
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             sender.sendMessage(ChatColor.BLUE + "Please right click a block with a " + ChatColor.AQUA + "STICK" + ChatColor.BLUE + " in this structure size to be the main chest. (any items produced or consumed, especially for building the structure will be found/put in here)");
@@ -752,7 +751,7 @@ public class Main extends JavaPlugin {
                                                                             }
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "archer");
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]));
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             sender.sendMessage(ChatColor.BLUE + "Please right click a block with a " + ChatColor.AQUA + "STICK" + ChatColor.BLUE + " in this structure size to be the main chest. (any items produced or consumed, especially for building the structure will be found/put in here)");
@@ -763,7 +762,7 @@ public class Main extends JavaPlugin {
                                                                             }
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("name", tempstring);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("type", "rank");
-                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]) - 1);
+                                                                            ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("height", Integer.parseInt(args[2]));
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("baseheight", player.getLocation().getBlockY() - 1);
                                                                             ((HashMap) tempHashMap.get("mainchest").get(player.getUniqueId().toString())).put("chunk", player.getLocation().getChunk());
                                                                             sender.sendMessage(ChatColor.BLUE + "Please right click a block with a " + ChatColor.AQUA + "STICK" + ChatColor.BLUE + " in this structure size to be the main chest. (any items produced or consumed, especially for building the structure will be found/put in here)");
@@ -2867,3 +2866,8 @@ public class Main extends JavaPlugin {
  Others:
  Admin Commands, and map tooltip setup, such as Holographic display hover system
  */
+
+
+//Construction time of 0 and Destruction time (Build class) are BROKEN
+//MULTI STRUCTURES ARE BROKEN
+//Normal structures work?
